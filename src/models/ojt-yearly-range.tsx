@@ -1,5 +1,5 @@
 export interface OjtYearlyDateRange {
-  id: number;
+  id: string;
   yearRange: string;
   start: Date;
   end: Date;

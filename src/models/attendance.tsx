@@ -1,6 +1,6 @@
 export interface AttendanceLog {
-  id: number;
-  userID: number;
+  id: string;
+  userID: string;
   type: string;
   timeDateISO: string;
   location: number[];

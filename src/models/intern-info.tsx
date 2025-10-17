@@ -1,9 +1,9 @@
 export interface InternInfo {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   program: string;
   schoolYear: string;
-  company: string;
+  trainingCompany: string;
   remainingHours: number;
   requiredHours: number;
   accomplished: boolean;

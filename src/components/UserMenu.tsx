@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { CircleUser, LogOut, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { CircleUser, LogOut } from "lucide-react";
+import { firebaseLogout } from "@saintrelion/auth-lib";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -26,18 +26,19 @@ export default function UserMenu() {
       />
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border bg-white shadow-lg">
-          <Link
+          {/* <Link
             to="/profile"
             className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
             onClick={() => setOpen(false)}
           >
             <User size={16} /> Profile
-          </Link>
+          </Link> */}
           <button
             onClick={() => {
               setOpen(false);
 
               console.log("Logging out...");
+              firebaseLogout();
               window.location.href = "/login";
             }}
             className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-100"

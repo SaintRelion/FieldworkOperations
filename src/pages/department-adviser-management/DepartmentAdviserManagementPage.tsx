@@ -2,17 +2,20 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useDBOperations, useMockSelect } from "@saintrelion/data-access-layer";
-import type { BaseUser } from "@/models/users";
+import { useDBOperations } from "@saintrelion/data-access-layer";
+import type { User } from "@/models/user";
 
-export default function DepartmentAdminManagementPage() {
-  const { useUpdate, useDelete } = useDBOperations<BaseUser>({
-    model: "Users",
-    mode: "mock", // switch to "api" for API-backed
-  });
+export default function DepartmentAdviserManagementPage() {
+  const {
+    useSelect: userSelect,
+    useUpdate: userUpdate,
+    useDelete: userDelete,
+  } = useDBOperations<User>("User");
 
-  const { data: departmentAdmins = [] } = useMockSelect<BaseUser>("Users", {
-    filterFn: (u) => u.role === "departmentadmin",
+  const { data: departmentAdmins = [] } = userSelect({
+    mockOptions: {
+      filterFn: (u) => u.role === "departmentadviser",
+    },
   });
   const [search, setSearch] = useState("");
 
@@ -22,19 +25,19 @@ export default function DepartmentAdminManagementPage() {
       s.email.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const toggleConfirmation = (id: number) => {
+  const toggleConfirmation = (id: string) => {
     const admin = departmentAdmins.find((a) => a.id === id);
     if (!admin) return;
 
-    useUpdate.mutate({ id, updates: { isEnabled: !admin.isEnabled } });
+    userUpdate.mutate({ id, updates: { isEnabled: !admin.isEnabled } });
   };
 
-  const handleDelete = (id: number) => useDelete.mutate(id);
+  const handleDelete = (id: string) => userDelete.mutate(id);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Department Admin List</h1>
+        <h1 className="text-2xl font-bold">Department Adviser List</h1>
       </div>
 
       <Input

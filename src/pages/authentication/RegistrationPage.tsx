@@ -1,105 +1,129 @@
-import { useState } from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { registerUser } from "@saintrelion/auth-lib";
+import { UserRole } from "@/model_types/userrole";
+import { Department } from "@/model_types/department";
+import { buildFieldsFromModel } from "@/to-be-library/forms/lib/helper";
+import type { RenderFormFieldValues } from "@/to-be-library/forms/render-form-fields-model";
+import { RenderFormButton } from "@/to-be-library/forms/render-form-button";
+import { RenderFormGroups } from "@/to-be-library/forms/render-form-group";
+import RenderForm from "@/to-be-library/forms/render-form";
+import { RenderCard } from "@/to-be-library/dynamic-ui/render-card";
+import { useDBOperations } from "@saintrelion/data-access-layer";
+import { pick } from "@/lib/utils";
+
+// ------------------
+// 1️⃣ Define field sets
+// ------------------
+const personalInfoFields = buildFieldsFromModel({
+  name: { type: "text", label: "Full Name" },
+  email: { type: "email", label: "Email" },
+  // employeeID: { type: "text", label: "Employee ID" },
+  password: {
+    type: "password",
+    label: "Password",
+    minLength: 6,
+  },
+  role: { type: "select", options: UserRole, label: "Role" },
+  department: { type: "select", options: Department, label: "Department" },
+});
+
+const internFields = buildFieldsFromModel({
+  program: { type: "text", label: "Program" },
+  requiredHours: { type: "number", label: "Required Hours" },
+  trainingCompany: { type: "text", label: "Training Company" },
+});
+
+const superAdminFields = buildFieldsFromModel({
+  systemKey: {
+    type: "text",
+    label: "System Credentials / Department Code",
+  },
+});
+
+// ------------------
+// 2️⃣ Define groups w/ conditions
+// ------------------
+const registrationGroups = [
+  {
+    label: "Personal Information",
+    fields: personalInfoFields,
+  },
+  {
+    label: "Intern Details",
+    fields: internFields,
+    condition: (values: Record<string, RenderFormFieldValues>) =>
+      values.role === "intern",
+  },
+  {
+    label: "System Access",
+    fields: superAdminFields,
+    condition: (values: Record<string, RenderFormFieldValues>) =>
+      values.role === "superadmin",
+  },
+];
 
 const RegistrationPage = () => {
-  const [role, setRole] = useState<string>("intern");
+  const { useInsert: internInfoInsert } = useDBOperations("InternInfo");
+
+  const handleRegister = async (data: Record<string, string>) => {
+    console.log("Raw submission:", data);
+
+    const userInfo = pick(data, [
+      "name",
+      "email",
+      "password",
+      "role",
+      "department",
+    ]);
+    const user = await registerUser(
+      userInfo.email,
+      userInfo.password,
+      userInfo,
+    );
+
+    if (userInfo.role == "intern") {
+      const internInfo = pick(data, [
+        "program",
+        "requiredHours",
+        "trainingCompany",
+      ]);
+
+      internInfoInsert.mutate({
+        userId: user?.uid,
+        remainingHours: internInfo.requiredHours,
+        accomplished: false,
+        ...internInfo,
+      });
+    }
+  };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-3xl rounded-2xl shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">
-            Registration
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Role Selector */}
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="departmentadmin">
-                  Department Admin
-                </SelectItem>
-                <SelectItem value="adviser">Adviser</SelectItem>
-                <SelectItem value="intern">Intern</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <RenderCard
+        wrapperClass="w-full max-w-3xl rounded-2xl shadow-xl"
+        headerTitle="Registration"
+        headerClass="text-center text-2xl font-bold"
+        contentClass="space-y-6"
+      >
+        <RenderForm>
+          <RenderFormGroups groups={registrationGroups} />
 
-          {/* Shared Fields */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input placeholder="Full Name" />
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" placeholder="Email Address" />
-            </div>
-          </div>
+          <RenderFormButton
+            buttonLabel="Register"
+            wrapperClass="mt-6"
+            onSubmit={handleRegister}
+          />
+        </RenderForm>
 
-          {/* Role-specific fields */}
-
-          {role === "intern" && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Course</Label>
-                <Input placeholder="Enter your course" />
-              </div>
-              <div className="space-y-2">
-                <Label>Required Hours</Label>
-                <Input type="number" placeholder="300" />
-              </div>
-              <div className="space-y-2">
-                <Label>Training Company</Label>
-                <Input placeholder="Company name" />
-              </div>
-            </div>
-          )}
-
-          {role === "adviser" && (
-            <div className="space-y-2">
-              <Label>Department</Label>
-              <Input placeholder="e.g., Computer Science" />
-            </div>
-          )}
-
-          {(role === "superadmin" || role === "departmentadmin") && (
-            <div className="space-y-2">
-              <Label>System Credentials / Department Code</Label>
-              <Input placeholder="Enter system key" />
-            </div>
-          )}
-
-          <Button className="w-full">Register</Button>
-
-          {/* 🚀 New section */}
-          <p className="text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-blue-600 hover:underline"
-            >
-              Login here
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <a
+            href="/login"
+            className="font-semibold text-blue-600 hover:underline"
+          >
+            Login here
+          </a>
+        </p>
+      </RenderCard>
     </div>
   );
 };

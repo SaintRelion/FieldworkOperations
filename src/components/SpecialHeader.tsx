@@ -3,36 +3,13 @@ import UserMenu from "./UserMenu";
 
 import { Menu } from "lucide-react";
 
-import { Link, useLocation } from "react-router-dom";
-import type { UserRole } from "@/models/userrole";
 import { useState, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@saintrelion/auth-lib";
-
-const navItems: Record<UserRole, { label: string; path: string }[]> = {
-  superadmin: [{ label: "Department Admins", path: "/departmentadmins" }],
-
-  departmentadmin: [
-    { label: "Dashboard", path: "/" },
-    { label: "Advisers", path: "/advisers" },
-    { label: "Settings", path: "/settings" },
-  ],
-
-  adviser: [
-    { label: "Dashboard", path: "/" },
-    { label: "Interns", path: "/interns" },
-  ],
-
-  intern: [
-    { label: "Dashboard", path: "/" },
-    { label: "Attendance Record", path: "/attendancerecord" },
-  ],
-};
+import { renderNavItems } from "@saintrelion/routers";
 
 const SpecialHeader = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const location = useLocation();
 
   return (
     <>
@@ -53,23 +30,11 @@ const SpecialHeader = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex flex-col space-y-2">
-          {navItems[user.role as UserRole].map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
-
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary",
-                )}
-              >
-                <span>{item.label}</span>
-              </Link>
-            );
+          {renderNavItems({
+            role: user.role ?? "",
+            baseClass:
+              "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all text-muted-foreground hover:bg-muted hover:text-primary",
+            activeClass: "bg-primary text-white pointer-events-none",
           })}
         </nav>
       </aside>

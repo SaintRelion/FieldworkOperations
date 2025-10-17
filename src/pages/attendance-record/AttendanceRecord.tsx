@@ -1,6 +1,8 @@
+import { parseYYYYMMDD } from "@/lib/mydate";
 import type { AttendanceLog } from "@/models/attendance";
+import { RenderCard } from "@/to-be-library/dynamic-ui/render-card";
 import { useAuth } from "@saintrelion/auth-lib";
-import { useMockSelect } from "@saintrelion/data-access-layer";
+import { useDBOperations } from "@saintrelion/data-access-layer";
 
 const typeColors: Record<string, string> = {
   in: "bg-green-100 text-green-700 border-green-300",
@@ -26,14 +28,20 @@ function formatDateTime(datetime: string) {
 const AttendanceRecord = () => {
   const { user } = useAuth();
 
-  const { data: records = [] } = useMockSelect<AttendanceLog>(
-    "AttendanceLogs",
-    {
+  const { useSelect: attendanceSelect } =
+    useDBOperations<AttendanceLog>("AttendanceLog");
+
+  const { data: records = [] } = attendanceSelect({
+    mockOptions: {
       filterFn: (log) => log.userID === user.id,
       sortFn: (a, b) =>
         new Date(b.timeDateISO).getTime() - new Date(a.timeDateISO).getTime(),
     },
-  );
+    firebaseOptions: {
+      filterField: "userID",
+      value: user.id,
+    },
+  });
 
   const grouped = records.reduce(
     (acc, rec) => {
@@ -50,8 +58,7 @@ const AttendanceRecord = () => {
   );
 
   return (
-    <div className="rounded-md border p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold">Attendance Record</h2>
+    <RenderCard headerTitle="Attendance Record">
       {records.length === 0 ? (
         <p className="text-sm text-gray-500">No attendance found.</p>
       ) : (
@@ -63,7 +70,6 @@ const AttendanceRecord = () => {
               </h3>
               <ul className="space-y-2">
                 {logs.map((rec, idx) => {
-                  const { time } = formatDateTime(rec.timeDateISO);
                   return (
                     <li
                       key={idx}
@@ -77,7 +83,9 @@ const AttendanceRecord = () => {
                         className="rounded-md"
                       />
                       <div>
-                        <p className="text-sm font-medium">{time}</p>
+                        <p className="text-sm font-medium">
+                          {parseYYYYMMDD(rec.timeDateISO).split("at")[1]}
+                        </p>
                         <p className="text-xs">
                           Lat: {rec.location[0]}, Lng: {rec.location[1]}
                         </p>
@@ -93,7 +101,7 @@ const AttendanceRecord = () => {
           ))}
         </div>
       )}
-    </div>
+    </RenderCard>
   );
 };
 export default AttendanceRecord;

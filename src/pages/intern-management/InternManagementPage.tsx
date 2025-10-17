@@ -1,40 +1,122 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperations, useMockSelect } from "@saintrelion/data-access-layer";
-import type { BaseUser } from "@/models/users";
+import { useDBOperations } from "@saintrelion/data-access-layer";
+import type { User } from "@/models/user";
 import type { InternInfo } from "@/models/intern-info";
+import DynamicTable from "@/to-be-library/dynamic-ui/dynamic-table";
+import type { ColumnDef } from "@tanstack/react-table";
+
+interface InternRow {
+  id: string;
+  name: string;
+  email: string;
+  program: string;
+  trainingCompany: string;
+  requiredHours: number;
+  isEnabled: boolean;
+}
 
 export default function InternManagementPage() {
+  const columns: ColumnDef<InternRow>[] = [
+    { header: "ID", accessorKey: "id" },
+    { header: "Name", accessorKey: "name" },
+    { header: "Email", accessorKey: "email" },
+    { header: "Program", accessorKey: "program" },
+
+    {
+      header: "Training Company",
+      accessorKey: "trainingCompany",
+    },
+    { header: "Required Hours", accessorKey: "requiredHours" },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <span
+            className={`rounded py-1 text-xs font-medium ${
+              user.isEnabled ? "text-green-700" : "text-red-300"
+            }`}
+          >
+            {user.isEnabled ? "Accepted" : "Declined"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="space-x-2 text-left">
+            <Button
+              size="sm"
+              className={`h-7 cursor-pointer text-xs ${user.isEnabled ? "bg-transparent" : "bg-black"}`}
+              onClick={() => toggleConfirmation(user.id)}
+              variant={user.isEnabled ? "secondary" : "default"}
+            >
+              {user.isEnabled ? "Decline" : "Accept"}
+            </Button>
+            <Trash2
+              className="mr-2 inline-block cursor-pointer text-red-700"
+              size={15}
+              onClick={() => handleDelete(user.id)}
+            />
+          </div>
+        );
+      },
+    },
+  ];
+
   const { user } = useAuth();
-  const { useUpdate, useDelete } = useDBOperations<BaseUser>({
-    model: "Users",
-    mode: "mock", // switch to "api" for real API
+
+  const {
+    useSelect: userSelect,
+    useUpdate: userUpdate,
+    useDelete: userDelete,
+  } = useDBOperations<User>("User");
+
+  const { useSelect: internSelect } = useDBOperations<InternInfo>("InternInfo");
+
+  // TODO: Make documentation on this, Firebase and Mock merging of data, API is a single endpoint
+  const { data: internInfos = [] } = internSelect();
+  const { data: interns = [] } = userSelect({
+    mockOptions: {
+      filterFn: (u) => u.role === "intern" && u.department === user?.department,
+    },
+    firebaseOptions: {
+      filterField: ["role", "department"],
+      value: ["intern", user?.department],
+      // sort: { field: "timeDateISO", direction: "desc" },
+    },
   });
 
-  const { data: internInfos = [] } = useMockSelect<InternInfo>("InternInfos");
-  const { data: interns = [] } = useMockSelect<BaseUser>("Users", {
-    filterFn: (u) => u.role === "intern" && u.department === user?.department,
+  const internRow: InternRow[] = interns.map((intern) => {
+    const info = internInfos.find((inf) => inf.userId === intern.id);
+
+    return {
+      id: intern.id,
+      name: intern.name,
+      email: intern.email,
+      program: info?.program ?? "—",
+      trainingCompany: info?.trainingCompany ?? "—",
+      requiredHours: info?.requiredHours ?? 0,
+      isEnabled: intern.isEnabled,
+    } as InternRow;
   });
-  const [search, setSearch] = useState("");
 
-  const filtered = interns.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const toggleConfirmation = (id: number) => {
+  const toggleConfirmation = (id: string) => {
     const intern = interns.find((i) => i.id === id);
     if (!intern) return;
 
-    useUpdate.mutate({ id, updates: { isEnabled: !intern.isEnabled } });
+    userUpdate.mutate({ id, updates: { isEnabled: !intern.isEnabled } });
   };
 
-  const handleDelete = (id: number) => useDelete.mutate(id);
+  const handleDelete = (id: string) => userDelete.mutate(id);
 
   return (
     <div className="space-y-4">
@@ -42,82 +124,12 @@ export default function InternManagementPage() {
         <h1 className="text-2xl font-bold">Intern List</h1>
       </div>
 
-      <Input
-        placeholder="Search student..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full md:w-1/2"
+      <DynamicTable
+        data={internRow}
+        columns={columns}
+        hiddenColumns={["id"]}
+        filters={["name"]}
       />
-
-      <div className="overflow-auto rounded-xl bg-white p-4 shadow">
-        <table className="w-full text-sm">
-          <thead className="border-b text-left font-semibold">
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Program</th>
-              <th>School Year</th>
-              <th>Company</th>
-              <th>Required</th>
-              <th>Status</th>
-              <th className="text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((s) => {
-              const info = internInfos.find((i) => i.userId == s.id);
-              return info == null ? (
-                <div>Incomplete Data</div>
-              ) : (
-                <tr
-                  key={s.id}
-                  className={`border-b py-2 ${
-                    s.isEnabled ? "bg-green-100" : "bg-gray-100"
-                  }`}
-                >
-                  <td className="py-2 pl-1">{s.name}</td>
-                  <td>{s.email}</td>
-                  <td>{info.program}</td>
-                  <td>{info.schoolYear}</td>
-                  <td>{info.company}</td>
-                  <td>{info.requiredHours} hrs</td>
-                  <td>
-                    <span
-                      className={`rounded py-1 text-xs font-medium ${
-                        s.isEnabled ? "text-green-700" : "text-red-300"
-                      }`}
-                    >
-                      {s.isEnabled ? "Accepted" : "Declined"}
-                    </span>
-                  </td>
-                  <td className="space-x-2 text-right">
-                    <Button
-                      size="sm"
-                      className={`h-7 cursor-pointer text-xs ${s.isEnabled ? "bg-transparent" : "bg-black"}`}
-                      onClick={() => toggleConfirmation(s.id)}
-                      variant={s.isEnabled ? "secondary" : "default"}
-                    >
-                      {s.isEnabled ? "Decline" : "Accept"}
-                    </Button>
-                    <Trash2
-                      className="mr-2 inline-block cursor-pointer text-red-700"
-                      size={15}
-                      onClick={() => handleDelete(s.id)}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-gray-500">
-                  No students found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }

@@ -3,8 +3,8 @@ import { Calendar } from "./ui/calendar";
 import { isBefore, isAfter, startOfDay, endOfDay } from "date-fns";
 
 import InternTable from "./tables/interntable";
-import { useMockSelect } from "@saintrelion/data-access-layer";
 import type { OjtYearlyDateRange } from "@/models/ojt-yearly-range";
+import { useDBOperations } from "@saintrelion/data-access-layer";
 
 const OJTAttendanceTable = () => {
   // Default
@@ -19,9 +19,9 @@ const OJTAttendanceTable = () => {
   );
   const [focusedMonth, setFocusedMonth] = useState<Date>();
 
-  const { data: ranges } = useMockSelect<OjtYearlyDateRange>(
-    "OjtYearlyDateRanges",
-  );
+  const { useSelect: ojtYearlyDateRangeSelect } =
+    useDBOperations<OjtYearlyDateRange>("OjtYearlyDateRange");
+  const { data: ranges } = ojtYearlyDateRangeSelect();
 
   const selectedRange = ranges?.find((r) => r.yearRange === selectedSchoolYear);
 

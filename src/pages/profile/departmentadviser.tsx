@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const AdviserProfilePage = () => {
+const DepartmentAdviserProfilePage = () => {
   return (
     <Card className="mx-auto max-w-3xl rounded-2xl border p-6 shadow-sm">
       <CardHeader>
@@ -50,4 +50,4 @@ const AdviserProfilePage = () => {
     </Card>
   );
 };
-export default AdviserProfilePage;
+export default DepartmentAdviserProfilePage;
