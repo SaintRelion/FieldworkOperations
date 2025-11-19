@@ -15,8 +15,8 @@ export default defineConfig({
       includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
       manifest: {
         name: "OJT Attendance App",
-        short_name: "OJTAtt",
-        description: "Offline GPS & distance tracker",
+        short_name: "OJT Attendance",
+        description: "OJT Attendance App",
         theme_color: "#ffffff",
         icons: [
           {

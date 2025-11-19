@@ -29,7 +29,11 @@ export default function DepartmentAdviserManagementPage() {
     const admin = departmentAdmins.find((a) => a.id === id);
     if (!admin) return;
 
-    userUpdate.mutate({ id, updates: { isEnabled: !admin.isEnabled } });
+    userUpdate.mutate({
+      field: "id",
+      value: id,
+      updates: { isEnabled: !admin.isEnabled },
+    });
   };
 
   const handleDelete = (id: string) => userDelete.mutate(id);

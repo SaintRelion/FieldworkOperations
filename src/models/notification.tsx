@@ -5,5 +5,5 @@ export interface Notification {
   type: string;
   isRead: boolean;
   isArchived: boolean;
-  createdAt: string; // ISO date string
+  createdAt: string;
 }

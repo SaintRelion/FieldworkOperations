@@ -32,7 +32,6 @@ registerGroupAppRoutes({
       element: <DashboardPage />,
       label: "Dashboard",
       allowedRoles: ["departmentadviser", "intern"],
-      invalidRolesRedirectPath: "/login",
     },
     {
       path: "/departmentadvisers",

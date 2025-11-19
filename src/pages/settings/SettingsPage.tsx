@@ -12,7 +12,6 @@ import type { Settings } from "@/models/settings";
 import { useAuth } from "@saintrelion/auth-lib";
 import { useDBOperations } from "@saintrelion/data-access-layer";
 import { useMemo } from "react";
-import { toast } from "sonner";
 
 const SettingsPage = () => {
   const { user } = useAuth();
@@ -57,10 +56,10 @@ const SettingsPage = () => {
         gracePeriodMinutes: settings.gracePeriodMinutes,
         penaltyRate: settings.penaltyRate,
       });
-      toast("✅ Settings Saved. Your department rules were added");
     } else {
       settingsUpdate.mutate({
-        id: settings.id,
+        field: "id",
+        value: settings.id,
         updates: {
           department: settings.department,
           timeIn: settings.timeIn,
@@ -69,7 +68,6 @@ const SettingsPage = () => {
           penaltyRate: settings.penaltyRate,
         },
       });
-      toast("✅ Settings Saved. Your department rules were updated");
     }
   };
 

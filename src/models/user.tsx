@@ -9,4 +9,6 @@ export interface User {
   department: Department;
   role: UserRole;
   isEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

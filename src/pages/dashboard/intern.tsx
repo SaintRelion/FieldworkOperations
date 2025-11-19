@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { parseYYYYMMDD } from "@/lib/mydate";
 import type { AttendanceLog } from "@/models/attendance";
 
+import {
+  formatReadableDateTime,
+  getCurrentDateTime,
+  isSameDay,
+} from "@saintrelion/time-functions";
 import { useDBOperations } from "@saintrelion/data-access-layer";
 import { useAuth } from "@saintrelion/auth-lib";
-import { RenderCard } from "@/to-be-library/dynamic-ui/render-card";
-import { GeoViewer } from "@/to-be-library/geofencing/geo-viewer";
-import type { Coords } from "@/to-be-library/geofencing/geo-models";
+import { GeoViewer } from "@/to-be-library/geo/geo-viewer";
+import type { Coords } from "@/to-be-library/geo/geo-models";
 import { LiveClock } from "@/to-be-library/live/live-clock";
 import { CameraCapture } from "@/to-be-library/live/camera-capture";
 import type { Settings } from "@/models/settings";
@@ -19,7 +22,6 @@ export default function InternDashboardPage() {
   let coords: Coords = { lat: 0, lng: 0 };
   function onCoordinateChange(c: Coords) {
     coords = c;
-    console.log(coords);
   }
 
   let liveTime: string = "";
@@ -28,8 +30,6 @@ export default function InternDashboardPage() {
   }
 
   const { useSelect: settingsSelect } = useDBOperations<Settings>("Settings");
-
-  // load settings for current department
   const { data: settingsList = [] } = settingsSelect({
     firebaseOptions: {
       filterField: "department",
@@ -37,51 +37,49 @@ export default function InternDashboardPage() {
     },
   });
 
-  const {
-    useSelect: interInfoSelect,
-    useUpdateByField: internInfoUpdateByField,
-  } = useDBOperations<InternInfo>("InternInfo");
-  const { useSelect: attendanceSelect, useInsert: attendanceInsert } =
-    useDBOperations<AttendanceLog>("AttendanceLog");
-
+  const { useSelect: interInfoSelect, useUpdate: internInfoUpdate } =
+    useDBOperations<InternInfo>("InternInfo");
   const { data: internInfo = [] } = interInfoSelect({
     firebaseOptions: {
-      filterField: "userId",
-      value: user.id,
+      filterField: ["userId"],
+      value: [user.id],
     },
   });
+
+  const { useSelect: attendanceSelect, useInsert: attendanceInsert } =
+    useDBOperations<AttendanceLog>("AttendanceLog");
 
   const { data: attendanceLogs = [] } = attendanceSelect({
     mockOptions: {
       filterFn: (log) => log.userID === user.id,
       sortFn: (a, b) =>
-        new Date(b.timeDateISO).getTime() - new Date(a.timeDateISO).getTime(),
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
     firebaseOptions: {
-      filterField: "userID",
-      value: user.id,
-      // sort: { field: "timeDateISO", direction: "desc" },
+      filterField: ["userID"],
+      value: [user.id],
+      // sort: { field: "createdAt", direction: "desc" },
     },
   });
   const sortedDate = attendanceLogs.sort(
-    (a, b) =>
-      new Date(b.timeDateISO).getTime() - new Date(a.timeDateISO).getTime(),
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
   const [timedIn, setTimedIn] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getCurrentDateTime().slice(0, 10);
+    console.log(today);
+    console.log("----");
 
     const inToday = attendanceLogs.some((log) => {
-      const logDate = new Date(log.timeDateISO).toISOString().slice(0, 10);
-      return logDate === today && log.type === "in";
+      console.log(log.createdAt);
+      return isSameDay(today, log.createdAt) && log.type === "in";
     });
 
     const outToday = attendanceLogs.some((log) => {
-      const logDate = new Date(log.timeDateISO).toISOString().slice(0, 10);
-      return logDate === today && log.type === "out";
+      return isSameDay(today, log.createdAt) && log.type === "out";
     });
 
     setTimedIn(inToday);
@@ -91,7 +89,8 @@ export default function InternDashboardPage() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Left Side: Live Camera + Controls */}
-      <RenderCard headerTitle="Attendance Tracker" contentClass="space-y-4">
+      <div className="space-y-4">
+        <h1>Attendance Tracker</h1>
         {/* Live Time */}
         <LiveClock onTimeChanged={onTimeChanged} />
 
@@ -110,7 +109,6 @@ export default function InternDashboardPage() {
                     attendanceInsert.mutate({
                       userID: user.id,
                       type: "in",
-                      timeDateISO: liveTime,
                       location: coords ? [coords.lat, coords.lng] : [0, 0],
                       image: img ?? "",
                     });
@@ -155,8 +153,8 @@ export default function InternDashboardPage() {
                         const updatedRequired = requiredHours + penalty;
                         const updatedRemaining = remainingHours + penalty;
 
-                        if (internInfoUpdateByField)
-                          internInfoUpdateByField.mutate({
+                        if (internInfoUpdate)
+                          internInfoUpdate.mutate({
                             field: "userId",
                             value: user.id,
                             updates: {
@@ -184,7 +182,6 @@ export default function InternDashboardPage() {
                       attendanceInsert.mutate({
                         userID: user.id,
                         type: "update",
-                        timeDateISO: liveTime,
                         location: coords ? [coords.lat, coords.lng] : [0, 0],
                         image: img ?? "",
                       });
@@ -201,7 +198,7 @@ export default function InternDashboardPage() {
                       // Find today's logs
                       const today = new Date().toISOString().slice(0, 10);
                       const todayLogs = attendanceLogs.filter((log) => {
-                        const logDate = new Date(log.timeDateISO)
+                        const logDate = new Date(log.createdAt)
                           .toISOString()
                           .slice(0, 10);
                         return logDate === today && log.userID === user.id;
@@ -209,7 +206,7 @@ export default function InternDashboardPage() {
 
                       const timeInLog = todayLogs.find((l) => l.type === "in");
                       if (timeInLog) {
-                        const timeIn = new Date(timeInLog.timeDateISO);
+                        const timeIn = new Date(timeInLog.createdAt);
                         const current = new Date(); // use real local time instead of liveTime if it's in UTC
 
                         const [outHour, outMin] = (
@@ -238,7 +235,6 @@ export default function InternDashboardPage() {
                         attendanceInsert.mutate({
                           userID: user.id,
                           type: "out",
-                          timeDateISO: liveTime,
                           location: coords ? [coords.lat, coords.lng] : [0, 0],
                           image: img ?? "",
                         });
@@ -254,17 +250,16 @@ export default function InternDashboardPage() {
 
                         console.log(internInfo[0].remainingHours);
 
-                        if (internInfoUpdateByField)
-                          internInfoUpdateByField.mutate({
-                            field: "userId",
-                            value: user.id,
-                            updates: {
-                              remainingHours: updatedRemaining,
-                              // // Optional: add workedHours field to track progress
-                              // workedHours:
-                              //   (Number(intern.workedHours) || 0) + diffHours,
-                            },
-                          });
+                        internInfoUpdate.mutate({
+                          field: "userId",
+                          value: user.id,
+                          updates: {
+                            remainingHours: updatedRemaining,
+                            // // Optional: add workedHours field to track progress
+                            // workedHours:
+                            //   (Number(intern.workedHours) || 0) + diffHours,
+                          },
+                        });
 
                         alert(
                           `[Work Hours] ${diffHours.toFixed(
@@ -292,13 +287,11 @@ export default function InternDashboardPage() {
             geoOptions={{ mode: "track" }}
           />
         </div>
-      </RenderCard>
+      </div>
 
       {/* Right Side: Attendance Logs */}
-      <RenderCard
-        headerTitle="Attendance History"
-        contentClass="max-h-[600px] space-y-3 overflow-y-auto"
-      >
+      <div className="max-h-[600px] space-y-3 overflow-y-auto">
+        <h1>Attendance History</h1>
         {sortedDate.length === 0 && (
           <p className="text-muted-foreground text-center text-sm">
             No attendance logs yet.
@@ -317,7 +310,7 @@ export default function InternDashboardPage() {
             />
             <div className="flex flex-col text-sm">
               <span className="font-medium">
-                {parseYYYYMMDD(log.timeDateISO)}
+                {formatReadableDateTime(log.createdAt)}
               </span>
               <span className="text-muted-foreground">
                 {log.location[0]}, {log.location[1]}
@@ -325,7 +318,7 @@ export default function InternDashboardPage() {
             </div>
           </div>
         ))}
-      </RenderCard>
+      </div>
     </div>
   );
 }

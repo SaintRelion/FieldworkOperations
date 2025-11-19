@@ -1,8 +1,7 @@
-import { parseYYYYMMDD } from "@/lib/mydate";
 import type { AttendanceLog } from "@/models/attendance";
-import { RenderCard } from "@/to-be-library/dynamic-ui/render-card";
 import { useAuth } from "@saintrelion/auth-lib";
 import { useDBOperations } from "@saintrelion/data-access-layer";
+import { formatReadableDate } from "@saintrelion/time-functions";
 
 const typeColors: Record<string, string> = {
   in: "bg-green-100 text-green-700 border-green-300",
@@ -35,7 +34,7 @@ const AttendanceRecord = () => {
     mockOptions: {
       filterFn: (log) => log.userID === user.id,
       sortFn: (a, b) =>
-        new Date(b.timeDateISO).getTime() - new Date(a.timeDateISO).getTime(),
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
     firebaseOptions: {
       filterField: "userID",
@@ -45,7 +44,7 @@ const AttendanceRecord = () => {
 
   const grouped = records.reduce(
     (acc, rec) => {
-      const date = rec.timeDateISO.split(" ")[0]; // take only the date part
+      const date = formatReadableDate(rec.createdAt); // take only the date part
       if (!acc[date]) acc[date] = [];
       acc[date].push(rec);
       return acc;
@@ -58,7 +57,8 @@ const AttendanceRecord = () => {
   );
 
   return (
-    <RenderCard headerTitle="Attendance Record">
+    <div>
+      <h1>Attendance Record</h1>
       {records.length === 0 ? (
         <p className="text-sm text-gray-500">No attendance found.</p>
       ) : (
@@ -84,7 +84,7 @@ const AttendanceRecord = () => {
                       />
                       <div>
                         <p className="text-sm font-medium">
-                          {parseYYYYMMDD(rec.timeDateISO).split("at")[1]}
+                          {formatReadableDate(rec.createdAt)}
                         </p>
                         <p className="text-xs">
                           Lat: {rec.location[0]}, Lng: {rec.location[1]}
@@ -101,7 +101,7 @@ const AttendanceRecord = () => {
           ))}
         </div>
       )}
-    </RenderCard>
+    </div>
   );
 };
 export default AttendanceRecord;

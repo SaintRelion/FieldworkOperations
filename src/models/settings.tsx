@@ -5,4 +5,6 @@ export interface Settings {
   timeOut: string; // "17:00"
   gracePeriodMinutes: number; // e.g. 15
   penaltyRate: number; // e.g. 10
+  createdAt: string;
+  updatedAt: string;
 }

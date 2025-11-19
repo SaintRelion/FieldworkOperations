@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* 3️⃣ Custom dark variant and theme token setup */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -41,6 +42,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* 4️⃣ Theme variables (light mode) */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -76,6 +78,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* 5️⃣ Dark mode variables */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -110,6 +113,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* 6️⃣ Global base layer styling */
 @layer base {
   * {
     @apply border-border outline-ring/50;

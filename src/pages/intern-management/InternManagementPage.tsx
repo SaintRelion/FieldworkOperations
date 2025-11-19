@@ -5,7 +5,7 @@ import { useAuth } from "@saintrelion/auth-lib";
 import { useDBOperations } from "@saintrelion/data-access-layer";
 import type { User } from "@/models/user";
 import type { InternInfo } from "@/models/intern-info";
-import DynamicTable from "@/to-be-library/dynamic-ui/dynamic-table";
+import { RenderTable } from "@saintrelion/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 
 interface InternRow {
@@ -113,7 +113,11 @@ export default function InternManagementPage() {
     const intern = interns.find((i) => i.id === id);
     if (!intern) return;
 
-    userUpdate.mutate({ id, updates: { isEnabled: !intern.isEnabled } });
+    userUpdate.mutate({
+      field: "id",
+      value: id,
+      updates: { isEnabled: !intern.isEnabled },
+    });
   };
 
   const handleDelete = (id: string) => userDelete.mutate(id);
@@ -124,7 +128,7 @@ export default function InternManagementPage() {
         <h1 className="text-2xl font-bold">Intern List</h1>
       </div>
 
-      <DynamicTable
+      <RenderTable
         data={internRow}
         columns={columns}
         hiddenColumns={["id"]}

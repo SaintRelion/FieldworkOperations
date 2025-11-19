@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
-import { parseYYYYMMDD } from "@/lib/mydate";
+import {
+  formatReadableDateTime,
+  getCurrentDateTime,
+} from "@saintrelion/time-functions";
 
 export function LiveClock({
   onTimeChanged,
@@ -12,7 +15,7 @@ export function LiveClock({
   useEffect(() => {
     let frame: number;
     const update = () => {
-      const time = new Date().toISOString();
+      const time = getCurrentDateTime();
 
       setCurrentTime(time);
 
@@ -30,7 +33,9 @@ export function LiveClock({
         <Clock className="text-muted-foreground h-4 w-4" />
         <p className="text-muted-foreground text-sm">Current Time</p>
       </div>
-      <p className="text-3xl font-bold">{parseYYYYMMDD(currentTime)}</p>
+      <p className="text-3xl font-bold">
+        {formatReadableDateTime(currentTime)}
+      </p>
     </div>
   );
 }

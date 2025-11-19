@@ -1,12 +1,12 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { format } from "date-fns";
 import { useAuth } from "@saintrelion/auth-lib";
 import type { InternInfo } from "@/models/intern-info";
 import type { AttendanceLog } from "@/models/attendance";
 import type { User } from "@/models/user";
 import { useDBOperations } from "@saintrelion/data-access-layer";
-import DynamicTable from "../../to-be-library/dynamic-ui/dynamic-table";
+import { RenderTable } from "@saintrelion/ui";
+import { formatReadableDate, isSameDay } from "@saintrelion/time-functions";
 
 const columns: ColumnDef<InternTableRow>[] = [
   { header: "ID", accessorKey: "id" },
@@ -54,6 +54,7 @@ interface InternTableRow {
 }
 
 export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
+  const selectedDateAsString = selectedDate?.toDateString() ?? "";
   const { user } = useAuth();
 
   const { useSelect: userSelect } = useDBOperations<User>("User");
@@ -69,7 +70,7 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
     firebaseOptions: {
       filterField: ["role", "department"],
       value: ["intern", user?.department],
-      // sort: { field: "timeDateISO", direction: "desc" },
+      // sort: { field: "createdAt", direction: "desc" },
     },
   });
 
@@ -94,10 +95,8 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
   }, [interns, internInfos]);
 
   const logsForDay = selectedDate
-    ? attendanceLogs.filter(
-        (attendance) =>
-          format(new Date(attendance.timeDateISO), "yyyy-MM-dd") ===
-          format(selectedDate, "yyyy-MM-dd"),
+    ? attendanceLogs.filter((attendance) =>
+        isSameDay(attendance.createdAt, selectedDateAsString),
       )
     : [];
 
@@ -109,17 +108,17 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
         <h2 className="text-lg font-semibold">
           Student List{" "}
           {selectedDate != null &&
-            `(${format(selectedDate, "MMMM d")}) - Attendance`}
+            `(${formatReadableDate(selectedDateAsString)}) - Attendance`}
         </h2>
       </div>
 
-      <DynamicTable
+      <RenderTable
         data={internTableData}
         columns={columns}
         hiddenColumns={["id"]}
         filters={["program", "trainingCompany"]}
         tableMinWidth={1000}
-        renderDataRow={(row) => {
+        dataRowSpecialClassName={(row) => {
           return attendanceSet.has(row.original.id)
             ? "bg-green-200"
             : "hover:bg-gray-100";

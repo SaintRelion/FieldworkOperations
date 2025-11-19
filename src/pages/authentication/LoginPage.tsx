@@ -1,19 +1,14 @@
 import { firebaseLoginWithEmail, useAuth } from "@saintrelion/auth-lib";
+import {
+  RenderForm,
+  RenderFormButton,
+  RenderFormField,
+} from "@saintrelion/forms";
 import { Link, useNavigate } from "react-router-dom";
-import { buildFieldsFromModel } from "@/to-be-library/forms/lib/helper";
-import RenderForm from "@/to-be-library/forms/render-form";
-import { RenderFormFields } from "@/to-be-library/forms/render-form-fields";
-import { RenderFormButton } from "@/to-be-library/forms/render-form-button";
-import { RenderCard } from "@/to-be-library/dynamic-ui/render-card";
 
 const LoginPage = () => {
   const { setUser } = useAuth();
   const navigate = useNavigate();
-
-  const authenticateFields = buildFieldsFromModel({
-    email: { type: "email", label: "Email" },
-    password: { type: "password", label: "Password" },
-  });
 
   const handleLogin = async (data: Record<string, string>) => {
     // Normally you'd call API here, then save returned user
@@ -28,7 +23,7 @@ const LoginPage = () => {
           navigate("/departmentadvisers"); // redirect to dashboard
         else navigate("/");
 
-        console.log(loggedInUser.createdAt.toDate());
+        console.log(loggedInUser.createdAt);
       },
     );
 
@@ -42,21 +37,33 @@ const LoginPage = () => {
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-      <RenderCard
-        headerTitle="Login"
-        headerClass="text-center text-2xl font-bold"
-        wrapperClass="w-full max-w-md rounded-2xl shadow-xl"
-      >
-        <RenderForm wrapperClass="space-y-5">
-          <RenderFormFields
-            fields={authenticateFields}
-            wrapperClass="flex flex-col gap-1"
+      <div className="flex flex-col">
+        <h1 className="text-center text-2xl font-bold">Login</h1>
+        <RenderForm
+          wrapperClass="w-full min-w-sm rounded-2xl space-y-2"
+          onSubmit={handleLogin}
+        >
+          <RenderFormField
+            field={{
+              label: "Email",
+              type: "email",
+              name: "email",
+            }}
+            inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
           />
 
-          <RenderFormButton buttonLabel="Login" onSubmit={handleLogin} />
+          <RenderFormField
+            field={{ label: "Password", type: "password", name: "password" }}
+            inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
+          />
+
+          <RenderFormButton
+            buttonClass="w-full rounded-lg bg-blue-600 py-2 font-semibold  transition-colors hover:bg-blue-700"
+            buttonLabel="Login"
+          />
         </RenderForm>
-        {/* 🚀 New section */}
-        <p className="text-center text-sm text-gray-600">
+
+        <p className="mt-2 text-center text-sm text-gray-600">
           No account yet?{" "}
           <Link
             to="/register"
@@ -65,7 +72,7 @@ const LoginPage = () => {
             Register here
           </Link>
         </p>
-      </RenderCard>
+      </div>
     </div>
   );
 };
