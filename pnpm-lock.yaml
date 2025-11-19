@@ -39,8 +39,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@saintrelion/data-access-layer':
-        specifier: ^4.2.16
-        version: 4.2.16(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^4.2.17
+        version: 4.2.17(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@saintrelion/forms':
         specifier: ^1.0.6
         version: 1.0.6(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
@@ -51,8 +51,8 @@ importers:
         specifier: ^1.1.15
         version: 1.1.15(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@saintrelion/time-functions':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.2
+        version: 1.0.2
       '@saintrelion/ui':
         specifier: ^1.0.5
         version: 1.0.5(@types/react-dom@19.1.8(@types/react@19.1.11))(@types/react@19.1.11)(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
@@ -1857,8 +1857,8 @@ packages:
   '@saintrelion/cache@1.0.0':
     resolution: {integrity: sha512-3DHJgMd8bQA+X0Ik525vRac10vAm6+w2tuB9nZ7mwWyzbjKrILFY0CFMbla24w5v7BewnKc0fVKj3gAoWTVHMg==, tarball: https://npm.pkg.github.com/download/@saintrelion/cache/1.0.0/22e742a576c1b844113b610d96340689f2beba46}
 
-  '@saintrelion/data-access-layer@4.2.16':
-    resolution: {integrity: sha512-dU7BrOqNZ8pgC8UYKvwShB9vmpoI+DuFNB8JY4hXJ/zLMdx8zFGdvnv0F0aOvJ9Wv3yXzt0WL41GBRcALC9eYg==, tarball: https://npm.pkg.github.com/download/@saintrelion/data-access-layer/4.2.16/052c4111081d4e5b8d5e01116ab81f15bbc3f46c}
+  '@saintrelion/data-access-layer@4.2.17':
+    resolution: {integrity: sha512-+I7GxqGuEcqs/iNdrYvUc0qqy589IyT8PIEXwHo4TC2yQziTii7L4OLPer9H72PN1xOlxZUTC/4myXgh/jXNKA==, tarball: https://npm.pkg.github.com/download/@saintrelion/data-access-layer/4.2.17/79e62c6a8c7b05ea187e61393273e0e86377ecb5}
 
   '@saintrelion/forms@1.0.6':
     resolution: {integrity: sha512-uY0r4UhE640HpeS0ed/3EuaLHEmBU1w38aUZdLWaRZvZwd1UBHs9goLoZYNpFZ5hsmHEAO7ayOKzdUjyMaoOww==, tarball: https://npm.pkg.github.com/download/@saintrelion/forms/1.0.6/df40f0c906f7e7a4e7d80c6c54938b43141bf416}
@@ -1869,8 +1869,8 @@ packages:
   '@saintrelion/routers@1.1.15':
     resolution: {integrity: sha512-k/bJggAzSlD0UFcJagbjHva2TwjMT8s4jXprsaKwZtH2BvMfrYa0Jeo/rsnanohE/r44P+WNwypdnLxQ2zshKA==, tarball: https://npm.pkg.github.com/download/@saintrelion/routers/1.1.15/ab5d1e5c0383200520a0dafa570201f6a3c596d1}
 
-  '@saintrelion/time-functions@1.0.0':
-    resolution: {integrity: sha512-enhthtxfpnwV/Yzeau3zNqcs/bfC8riTeHxoVHTxKXKW5LvuV4zvc7P8To2tPCse7aM6H9zVPx5F23d78p/5AQ==, tarball: https://npm.pkg.github.com/download/@saintrelion/time-functions/1.0.0/728d13db0c15309c1707ac1fe3d1018de18894de}
+  '@saintrelion/time-functions@1.0.2':
+    resolution: {integrity: sha512-wt2lThr8+OyPQPBmpXISG7ccABZ62UtGhkzTL1fYQe7ulsdt+vsCDGGQKvN23Ep8EMEmIIP/iu8jYsSVZpbYAg==, tarball: https://npm.pkg.github.com/download/@saintrelion/time-functions/1.0.2/c97363e25482ce6bceab6b44de1959536303199f}
 
   '@saintrelion/ui@1.0.5':
     resolution: {integrity: sha512-J5BHaTVxX6nEiTah68WcbD3PjtYRKJ5wq/JKlxkm98zWE9kzlAHjQRj+t7izuFgfXFL7Y0Lrk2xI2jfdxTApXg==, tarball: https://npm.pkg.github.com/download/@saintrelion/ui/1.0.5/17f343bde2be7308b41adaf86a8589c7c0906653}
@@ -5995,11 +5995,11 @@ snapshots:
     dependencies:
       idb: 8.0.3
 
-  '@saintrelion/data-access-layer@4.2.16(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@saintrelion/data-access-layer@4.2.17(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@saintrelion/cache': 1.0.0
       '@saintrelion/notifications': 1.0.2
-      '@saintrelion/time-functions': 1.0.0
+      '@saintrelion/time-functions': 1.0.2
       '@tanstack/react-query': 5.85.5(react@19.1.1)
       firebase: 12.2.1
       react-router-dom: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -6047,7 +6047,7 @@ snapshots:
       - react
       - react-dom
 
-  '@saintrelion/time-functions@1.0.0': {}
+  '@saintrelion/time-functions@1.0.2': {}
 
   '@saintrelion/ui@1.0.5(@types/react-dom@19.1.8(@types/react@19.1.11))(@types/react@19.1.11)(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))':
     dependencies:

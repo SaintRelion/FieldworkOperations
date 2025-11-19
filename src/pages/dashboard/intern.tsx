@@ -4,7 +4,7 @@ import type { AttendanceLog } from "@/models/attendance";
 
 import {
   formatReadableDateTime,
-  getCurrentDateTime,
+  getCurrentDateTimeString,
   isSameDay,
 } from "@saintrelion/time-functions";
 import { useDBOperations } from "@saintrelion/data-access-layer";
@@ -69,7 +69,7 @@ export default function InternDashboardPage() {
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const today = getCurrentDateTime().slice(0, 10);
+    const today = getCurrentDateTimeString().slice(0, 10);
     console.log(today);
     console.log("----");
 

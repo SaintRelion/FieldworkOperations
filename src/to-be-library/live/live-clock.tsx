@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import {
   formatReadableDateTime,
-  getCurrentDateTime,
+  getCurrentDateTimeString,
 } from "@saintrelion/time-functions";
 
 export function LiveClock({
@@ -15,8 +15,7 @@ export function LiveClock({
   useEffect(() => {
     let frame: number;
     const update = () => {
-      const time = getCurrentDateTime();
-
+      const time = getCurrentDateTimeString();
       setCurrentTime(time);
 
       if (onTimeChanged) onTimeChanged(time);
