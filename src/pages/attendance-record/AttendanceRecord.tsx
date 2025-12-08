@@ -1,7 +1,7 @@
 import type { AttendanceLog } from "@/models/attendance";
 import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperations } from "@saintrelion/data-access-layer";
-import { formatReadableDate } from "@saintrelion/time-functions";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
+import { formatReadableDate, toDate } from "@saintrelion/time-functions";
 
 const typeColors: Record<string, string> = {
   in: "bg-green-100 text-green-700 border-green-300",
@@ -27,17 +27,18 @@ function formatDateTime(datetime: string) {
 const AttendanceRecord = () => {
   const { user } = useAuth();
 
+  // Intern Attendance Select
   const { useSelect: attendanceSelect } =
-    useDBOperations<AttendanceLog>("AttendanceLog");
+    useDBOperationsLocked<AttendanceLog>("AttendanceLog");
 
   const { data: records = [] } = attendanceSelect({
     mockOptions: {
-      filterFn: (log) => log.userID === user.id,
+      filterFn: (log) => log.userId === user.id,
       sortFn: (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
     firebaseOptions: {
-      filterField: "userID",
+      filterField: "userId",
       value: user.id,
     },
   });
@@ -52,9 +53,15 @@ const AttendanceRecord = () => {
     {} as Record<string, AttendanceLog[]>,
   );
 
-  const sortedGrouped = Object.entries(grouped).sort(
-    ([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime(), // DESC
-  );
+  const sortedGrouped = Object.entries(grouped).sort(([dateA], [dateB]) => {
+    const toDateB = toDate(dateB);
+    const toDateA = toDate(dateA);
+
+    if (toDateB != null && toDateA != null)
+      return toDateB.getTime() - toDateA.getTime();
+
+    return -1;
+  });
 
   return (
     <div>
@@ -63,42 +70,54 @@ const AttendanceRecord = () => {
         <p className="text-sm text-gray-500">No attendance found.</p>
       ) : (
         <div className="space-y-4">
-          {sortedGrouped.map(([date, logs]) => (
-            <div key={date}>
-              <h3 className="mb-2 text-sm font-medium text-gray-600">
-                {formatDateTime(date).date}
-              </h3>
-              <ul className="space-y-2">
-                {logs.map((rec, idx) => {
-                  return (
-                    <li
-                      key={idx}
-                      className={`flex items-center gap-3 rounded-md border p-2 ${typeColors[rec.type] || ""}`}
-                    >
-                      <img
-                        src={rec.image}
-                        alt="Attendance snapshot"
-                        width={80}
-                        height={60}
-                        className="rounded-md"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {formatReadableDate(rec.createdAt)}
-                        </p>
-                        <p className="text-xs">
-                          Lat: {rec.location[0]}, Lng: {rec.location[1]}
-                        </p>
-                        <span className="mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold">
-                          {rec.type.toUpperCase()}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+          {sortedGrouped.map(([date, logs]) => {
+            const sortedLogs = logs.sort((a, b) => {
+              const toDateB = toDate(b.createdAt);
+              const toDateA = toDate(a.createdAt);
+
+              if (toDateB != null && toDateA != null)
+                return toDateB.getTime() - toDateA.getTime();
+
+              return -1;
+            });
+
+            return (
+              <div key={date}>
+                <h3 className="mb-2 text-sm font-medium text-gray-600">
+                  {formatDateTime(date).date}
+                </h3>
+                <ul className="space-y-2">
+                  {sortedLogs.map((rec, idx) => {
+                    return (
+                      <li
+                        key={idx}
+                        className={`flex items-center gap-3 rounded-md border p-2 ${typeColors[rec.type] || ""}`}
+                      >
+                        <img
+                          src={rec.image}
+                          alt="Attendance snapshot"
+                          width={80}
+                          height={60}
+                          className="rounded-md"
+                        />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {formatReadableDate(rec.createdAt)}
+                          </p>
+                          <p className="text-xs">
+                            Lat: {rec.location[0]}, Lng: {rec.location[1]}
+                          </p>
+                          <span className="mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold">
+                            {rec.type.toUpperCase()}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { firebaseLoginWithEmail, useAuth } from "@saintrelion/auth-lib";
+import { useAuth, useLoginWithCredentials } from "@saintrelion/auth-lib";
 import {
   RenderForm,
   RenderFormButton,
@@ -10,11 +10,14 @@ const LoginPage = () => {
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
+  const loginWithCredentials = useLoginWithCredentials();
+
   const handleLogin = async (data: Record<string, string>) => {
     // Normally you'd call API here, then save returned user
     console.log("Raw submission:", data);
 
-    await firebaseLoginWithEmail(
+    await loginWithCredentials.run(
+      "email",
       data.email,
       data.password,
       setUser,
@@ -22,8 +25,6 @@ const LoginPage = () => {
         if (loggedInUser.role == "superadmin")
           navigate("/departmentadvisers"); // redirect to dashboard
         else navigate("/");
-
-        console.log(loggedInUser.createdAt);
       },
     );
 
@@ -39,10 +40,7 @@ const LoginPage = () => {
     <div className="flex h-screen w-full items-center justify-center bg-gray-50">
       <div className="flex flex-col">
         <h1 className="text-center text-2xl font-bold">Login</h1>
-        <RenderForm
-          wrapperClass="w-full min-w-sm rounded-2xl space-y-2"
-          onSubmit={handleLogin}
-        >
+        <RenderForm wrapperClass="w-full min-w-sm rounded-2xl space-y-2">
           <RenderFormField
             field={{
               label: "Email",
@@ -58,8 +56,10 @@ const LoginPage = () => {
           />
 
           <RenderFormButton
-            buttonClass="w-full rounded-lg bg-blue-600 py-2 font-semibold  transition-colors hover:bg-blue-700"
+            buttonClassName="w-full rounded-lg bg-blue-600 py-2 font-semibold  transition-colors hover:bg-blue-700"
             buttonLabel="Login"
+            isDisabled={loginWithCredentials.isLocked}
+            onSubmit={handleLogin}
           />
         </RenderForm>
 

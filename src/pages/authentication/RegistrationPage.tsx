@@ -1,4 +1,4 @@
-import { registerUser } from "@saintrelion/auth-lib";
+import { useRegisterUser } from "@saintrelion/auth-lib";
 import { UserRole } from "@/model_types/userrole";
 import { Department } from "@/model_types/department";
 import {
@@ -6,31 +6,44 @@ import {
   RenderFormField,
   RenderFormButton,
 } from "@saintrelion/forms";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import { useState } from "react";
 
 const RegistrationPage = () => {
   const [selectedRole, setSelectedRole] = useState("intern");
 
-  const { useInsert: internInfoInsert } = useDBOperations("InternInfo");
+  const { useInsert: internInfoInsert } = useDBOperationsLocked("InternInfo");
+  const registerUser = useRegisterUser();
 
   const handleRegister = async (data: Record<string, string>) => {
     console.log("Raw submission:", data);
 
-    const { firstname, lastname, email, password, role, department } = data;
+    const { firstName, lastName, email, password, role, department } = data;
 
-    const user = await registerUser(email, password, {
-      firstname,
-      lastname,
-      role,
-      department,
+    const user = await registerUser.run({
+      info:
+        role == "superadmin"
+          ? {
+              email,
+              firstName,
+              lastName,
+              role,
+            }
+          : {
+              email,
+              firstName,
+              lastName,
+              role,
+              department,
+            },
+      password: password,
     });
 
     if (role == "intern") {
       const { program, requiredHours, trainingCompany } = data;
 
-      internInfoInsert.mutate({
-        userId: user?.uid,
+      internInfoInsert.run({
+        userId: user?.id,
         remainingHours: requiredHours,
         accomplished: false,
         program,
@@ -44,16 +57,16 @@ const RegistrationPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-3xl space-y-3 rounded-2xl">
         <h1 className="text-center text-2xl font-bold">Registration</h1>
-        <RenderForm wrapperClass="space-y-5" onSubmit={handleRegister}>
+        <RenderForm wrapperClass="space-y-5">
           <div className="flex flex-col">
             <h2 className="font-bold">Personal Information</h2>
             <div className="grid grid-cols-2 space-x-2">
               <RenderFormField
-                field={{ label: "First Name", type: "text", name: "firstname" }}
+                field={{ label: "First Name", type: "text", name: "firstName" }}
                 inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
               />
               <RenderFormField
-                field={{ label: "Last Name", type: "text", name: "lastname" }}
+                field={{ label: "Last Name", type: "text", name: "lastName" }}
                 inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
               />
               <RenderFormField
@@ -81,15 +94,17 @@ const RegistrationPage = () => {
                 }}
                 inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
               />
-              <RenderFormField
-                field={{
-                  label: "Department",
-                  type: "select",
-                  name: "department",
-                  options: Department,
-                }}
-                inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
-              />
+              {selectedRole != "superadmin" && (
+                <RenderFormField
+                  field={{
+                    label: "Department",
+                    type: "select",
+                    name: "department",
+                    options: Department,
+                  }}
+                  inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                />
+              )}
             </div>
           </div>
 
@@ -119,21 +134,26 @@ const RegistrationPage = () => {
             </div>
           )}
 
-          {selectedRole == "superadmin" && (
+          {/* {selectedRole == "superadmin" && (
             <div>
               <h2 className="font-bold">System Access</h2>
               <RenderFormField
                 field={{
                   label: "System Credentials / Department Code",
                   type: "text",
-                  name: "accesscode",
+                  name: "accessCode",
                 }}
                 inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
               />
             </div>
-          )}
+          )} */}
 
-          <RenderFormButton buttonLabel="Register" buttonClass="mt-6" />
+          <RenderFormButton
+            buttonLabel="Register"
+            isDisabled={registerUser.isLocked}
+            buttonClassName="mt-6"
+            onSubmit={handleRegister}
+          />
         </RenderForm>
 
         <p className="text-center text-sm text-gray-600">

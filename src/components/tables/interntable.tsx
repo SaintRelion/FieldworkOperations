@@ -4,13 +4,14 @@ import { useAuth } from "@saintrelion/auth-lib";
 import type { InternInfo } from "@/models/intern-info";
 import type { AttendanceLog } from "@/models/attendance";
 import type { User } from "@/models/user";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import { RenderTable } from "@saintrelion/ui";
 import { formatReadableDate, isSameDay } from "@saintrelion/time-functions";
 
 const columns: ColumnDef<InternTableRow>[] = [
   { header: "ID", accessorKey: "id" },
-  { header: "Name", accessorKey: "name" },
+  { header: "First Name", accessorKey: "firstName" },
+  { header: "Last Name", accessorKey: "lastName" },
   { header: "Program", accessorKey: "program" },
   { header: "Training Company", accessorKey: "trainingCompany" },
   {
@@ -43,7 +44,8 @@ const columns: ColumnDef<InternTableRow>[] = [
 
 interface InternTableRow {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   program: string;
   schoolYear: string;
@@ -57,11 +59,11 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
   const selectedDateAsString = selectedDate?.toDateString() ?? "";
   const { user } = useAuth();
 
-  const { useSelect: userSelect } = useDBOperations<User>("User");
+  const { useSelect: userSelect } = useDBOperationsLocked<User>("User");
   const { useSelect: internInfoSelect } =
-    useDBOperations<InternInfo>("InternInfo");
+    useDBOperationsLocked<InternInfo>("InternInfo");
   const { useSelect: attendanceSelect } =
-    useDBOperations<AttendanceLog>("AttendanceLog");
+    useDBOperationsLocked<AttendanceLog>("AttendanceLog");
 
   const { data: interns = [] } = userSelect({
     mockOptions: {
@@ -82,7 +84,8 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
       const info = internInfos.find((i) => i.userId === intern.id);
       return {
         id: intern.id,
-        name: intern.name,
+        firstName: intern.firstName,
+        lastName: intern.lastName,
         email: intern.email,
         program: info?.program ?? "-",
         schoolYear: info?.schoolYear ?? "-",
@@ -100,7 +103,7 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
       )
     : [];
 
-  const attendanceSet = new Set(logsForDay.map((log) => log.userID));
+  const attendanceSet = new Set(logsForDay.map((log) => log.userId));
 
   return (
     <div className="mt-6 rounded-xl bg-white p-4 shadow">

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { CircleUser, LogOut } from "lucide-react";
-import { firebaseLogout } from "@saintrelion/auth-lib";
+import { logout } from "@saintrelion/auth-lib";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -38,7 +38,7 @@ export default function UserMenu() {
               setOpen(false);
 
               console.log("Logging out...");
-              firebaseLogout();
+              logout();
               window.location.href = "/login";
             }}
             className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-100"

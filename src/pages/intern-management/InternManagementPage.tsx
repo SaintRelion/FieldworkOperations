@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import type { User } from "@/models/user";
 import type { InternInfo } from "@/models/intern-info";
 import { RenderTable } from "@saintrelion/ui";
@@ -10,7 +10,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 interface InternRow {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   program: string;
   trainingCompany: string;
@@ -21,7 +22,8 @@ interface InternRow {
 export default function InternManagementPage() {
   const columns: ColumnDef<InternRow>[] = [
     { header: "ID", accessorKey: "id" },
-    { header: "Name", accessorKey: "name" },
+    { header: "First Name", accessorKey: "firstName" },
+    { header: "Last Name", accessorKey: "lastName" },
     { header: "Email", accessorKey: "email" },
     { header: "Program", accessorKey: "program" },
 
@@ -78,11 +80,13 @@ export default function InternManagementPage() {
     useSelect: userSelect,
     useUpdate: userUpdate,
     useDelete: userDelete,
-  } = useDBOperations<User>("User");
+  } = useDBOperationsLocked<User>("User");
 
-  const { useSelect: internSelect } = useDBOperations<InternInfo>("InternInfo");
+  const { useSelect: internSelect } =
+    useDBOperationsLocked<InternInfo>("InternInfo");
 
   // TODO: Make documentation on this, Firebase and Mock merging of data, API is a single endpoint
+  // Intern Management
   const { data: internInfos = [] } = internSelect();
   const { data: interns = [] } = userSelect({
     mockOptions: {
@@ -100,7 +104,8 @@ export default function InternManagementPage() {
 
     return {
       id: intern.id,
-      name: intern.name,
+      firstName: intern.firstName,
+      lastName: intern.lastName,
       email: intern.email,
       program: info?.program ?? "—",
       trainingCompany: info?.trainingCompany ?? "—",
@@ -113,14 +118,14 @@ export default function InternManagementPage() {
     const intern = interns.find((i) => i.id === id);
     if (!intern) return;
 
-    userUpdate.mutate({
+    userUpdate.run({
       field: "id",
       value: id,
       updates: { isEnabled: !intern.isEnabled },
     });
   };
 
-  const handleDelete = (id: string) => userDelete.mutate(id);
+  const handleDelete = (id: string) => userDelete.run(id);
 
   return (
     <div className="space-y-4">
@@ -132,7 +137,7 @@ export default function InternManagementPage() {
         data={internRow}
         columns={columns}
         hiddenColumns={["id"]}
-        filters={["name"]}
+        filters={["firstName", "lastName"]}
       />
     </div>
   );

@@ -3,22 +3,28 @@ import OJTAttendanceTable from "@/components/OJTAttendanceTable";
 import type { InternInfo } from "@/models/intern-info";
 import type { User } from "@/models/user";
 import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import { UserPlus } from "lucide-react";
 
 export function DepartmentAdviserDashboard() {
   const { user } = useAuth();
 
-  const { useSelect: userSelect } = useDBOperations<User>("User");
+  // Intern Select
+  const { useSelect: userSelect } = useDBOperationsLocked<User>("User");
   const { useSelect: interinfoSelect } =
-    useDBOperations<InternInfo>("InternInfo");
+    useDBOperationsLocked<InternInfo>("InternInfo");
 
   const userDepartment = user.department;
 
-  // 👩‍🎓 Interns filtered by department
+  // Intern Selection by Department
   const { data: interns = [] } = userSelect({
     mockOptions: {
       filterFn: (u) => u.role === "intern" && u.department === userDepartment,
+    },
+    firebaseOptions: {
+      filterField: ["role", "department"],
+      value: ["intern", user?.department],
+      // sort: { field: "createdAt", direction: "desc" },
     },
   });
   const { data: internInfos = [] } = interinfoSelect();
@@ -28,7 +34,8 @@ export function DepartmentAdviserDashboard() {
     if (!grouped[info.trainingCompany]) grouped[info.trainingCompany] = [];
 
     const user = interns.find((u) => u.id === info.userId);
-    if (user) grouped[info.trainingCompany].push(user.name); // push name instead of id
+    if (user)
+      grouped[info.trainingCompany].push(`${user.firstName} ${user.lastName}`); // push name instead of id
   });
 
   const stats = [
@@ -47,7 +54,7 @@ export function DepartmentAdviserDashboard() {
       {/* Stats Cards */}
       <div>
         <h1 className="text-2xl font-bold">
-          Department Adviser Dashboard (${userDepartment})
+          Department Adviser Dashboard ({userDepartment})
         </h1>
       </div>
       <RenderDataCore

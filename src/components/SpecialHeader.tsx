@@ -1,5 +1,4 @@
 import UserMenu from "./UserMenu";
-// import NotificationPopup from "./NotificationPopup";
 
 import { Menu } from "lucide-react";
 
@@ -32,9 +31,10 @@ const SpecialHeader = ({ children }: { children: ReactNode }) => {
         <nav className="flex flex-col space-y-2">
           {renderNavItems({
             role: user.role ?? "",
-            baseClass:
+            baseClassName:
               "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all text-muted-foreground hover:bg-muted hover:text-primary",
-            activeClass: "bg-primary text-white pointer-events-none",
+            activeClassName:
+              "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all bg-primary text-white pointer-events-none",
           })}
         </nav>
       </aside>

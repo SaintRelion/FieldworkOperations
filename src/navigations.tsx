@@ -1,8 +1,4 @@
-import {
-  createAppRouter,
-  registerAppRoute,
-  registerGroupAppRoutes,
-} from "@saintrelion/routers";
+import { createAppRouter, registerGroupAppRoutes } from "@saintrelion/routers";
 
 import RootLayout from "@/layout/RootLayout";
 import NotFound from "./pages/NotFound";
@@ -26,6 +22,10 @@ registerGroupAppRoutes({
   path: "/",
   errorElement: <NotFound />,
   children: [
+    // PUBLIC
+    { path: "/login", public: true, element: <LoginPage /> },
+    { path: "/register", public: true, element: <RegistrationPage /> },
+    // RESTRICTED
     {
       index: true,
       path: "/",
@@ -60,9 +60,5 @@ registerGroupAppRoutes({
     },
   ],
 });
-
-// Public routes
-registerAppRoute({ path: "/login", element: <LoginPage /> });
-registerAppRoute({ path: "/register", element: <RegistrationPage /> });
 
 export const router = createAppRouter();

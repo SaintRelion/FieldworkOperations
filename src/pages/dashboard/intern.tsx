@@ -6,8 +6,9 @@ import {
   formatReadableDateTime,
   getCurrentDateTimeString,
   isSameDay,
+  toDate,
 } from "@saintrelion/time-functions";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import { useAuth } from "@saintrelion/auth-lib";
 import { GeoViewer } from "@/to-be-library/geo/geo-viewer";
 import type { Coords } from "@/to-be-library/geo/geo-models";
@@ -29,7 +30,8 @@ export default function InternDashboardPage() {
     liveTime = time;
   }
 
-  const { useSelect: settingsSelect } = useDBOperations<Settings>("Settings");
+  const { useSelect: settingsSelect } =
+    useDBOperationsLocked<Settings>("Settings");
   const { data: settingsList = [] } = settingsSelect({
     firebaseOptions: {
       filterField: "department",
@@ -37,8 +39,9 @@ export default function InternDashboardPage() {
     },
   });
 
+  // Intern Select
   const { useSelect: interInfoSelect, useUpdate: internInfoUpdate } =
-    useDBOperations<InternInfo>("InternInfo");
+    useDBOperationsLocked<InternInfo>("InternInfo");
   const { data: internInfo = [] } = interInfoSelect({
     firebaseOptions: {
       filterField: ["userId"],
@@ -46,12 +49,13 @@ export default function InternDashboardPage() {
     },
   });
 
+  // Attendance Select
   const { useSelect: attendanceSelect, useInsert: attendanceInsert } =
-    useDBOperations<AttendanceLog>("AttendanceLog");
+    useDBOperationsLocked<AttendanceLog>("AttendanceLog");
 
   const { data: attendanceLogs = [] } = attendanceSelect({
     mockOptions: {
-      filterFn: (log) => log.userID === user.id,
+      filterFn: (log) => log.userId === user.id,
       sortFn: (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
@@ -61,9 +65,16 @@ export default function InternDashboardPage() {
       // sort: { field: "createdAt", direction: "desc" },
     },
   });
-  const sortedDate = attendanceLogs.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+
+  const sortedDate = attendanceLogs.sort((a, b) => {
+    const toDateB = toDate(b.createdAt);
+    const toDateA = toDate(a.createdAt);
+
+    if (toDateB != null && toDateA != null)
+      return toDateB.getTime() - toDateA.getTime();
+
+    return -1;
+  });
 
   const [timedIn, setTimedIn] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
@@ -106,8 +117,8 @@ export default function InternDashboardPage() {
                     const img = capture();
 
                     // --- Save attendance record ---
-                    attendanceInsert.mutate({
-                      userID: user.id,
+                    attendanceInsert.run({
+                      userId: user.id,
                       type: "in",
                       location: coords ? [coords.lat, coords.lng] : [0, 0],
                       image: img ?? "",
@@ -154,7 +165,7 @@ export default function InternDashboardPage() {
                         const updatedRemaining = remainingHours + penalty;
 
                         if (internInfoUpdate)
-                          internInfoUpdate.mutate({
+                          internInfoUpdate.run({
                             field: "userId",
                             value: user.id,
                             updates: {
@@ -179,8 +190,8 @@ export default function InternDashboardPage() {
                     onClick={() => {
                       const img = capture();
 
-                      attendanceInsert.mutate({
-                        userID: user.id,
+                      attendanceInsert.run({
+                        userId: user.id,
                         type: "update",
                         location: coords ? [coords.lat, coords.lng] : [0, 0],
                         image: img ?? "",
@@ -201,7 +212,7 @@ export default function InternDashboardPage() {
                         const logDate = new Date(log.createdAt)
                           .toISOString()
                           .slice(0, 10);
-                        return logDate === today && log.userID === user.id;
+                        return logDate === today && log.userId === user.id;
                       });
 
                       const timeInLog = todayLogs.find((l) => l.type === "in");
@@ -232,8 +243,8 @@ export default function InternDashboardPage() {
                         const workedHours = Math.round(diffHours * 100) / 100;
 
                         // Save Time Out record
-                        attendanceInsert.mutate({
-                          userID: user.id,
+                        attendanceInsert.run({
+                          userId: user.id,
                           type: "out",
                           location: coords ? [coords.lat, coords.lng] : [0, 0],
                           image: img ?? "",
@@ -250,7 +261,7 @@ export default function InternDashboardPage() {
 
                         console.log(internInfo[0].remainingHours);
 
-                        internInfoUpdate.mutate({
+                        internInfoUpdate.run({
                           field: "userId",
                           value: user.id,
                           updates: {

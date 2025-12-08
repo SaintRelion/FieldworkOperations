@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import type { User } from "@/models/user";
 
 export default function DepartmentAdviserManagementPage() {
@@ -10,33 +10,39 @@ export default function DepartmentAdviserManagementPage() {
     useSelect: userSelect,
     useUpdate: userUpdate,
     useDelete: userDelete,
-  } = useDBOperations<User>("User");
+  } = useDBOperationsLocked<User>("User");
 
-  const { data: departmentAdmins = [] } = userSelect({
+  const { data: departmentAdvisers = [] } = userSelect({
     mockOptions: {
       filterFn: (u) => u.role === "departmentadviser",
+    },
+    firebaseOptions: {
+      filterField: ["role"],
+      value: ["departmentadviser"],
     },
   });
   const [search, setSearch] = useState("");
 
-  const filtered = departmentAdmins.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = departmentAdvisers.filter((s) => {
+    return (
+      s.firstName.toLowerCase().includes(search.toLowerCase()) ||
+      s.lastName.toLowerCase().includes(search.toLowerCase()) ||
+      s.email.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   const toggleConfirmation = (id: string) => {
-    const admin = departmentAdmins.find((a) => a.id === id);
+    const admin = departmentAdvisers.find((a) => a.id === id);
     if (!admin) return;
 
-    userUpdate.mutate({
+    userUpdate.run({
       field: "id",
       value: id,
       updates: { isEnabled: !admin.isEnabled },
     });
   };
 
-  const handleDelete = (id: string) => userDelete.mutate(id);
+  const handleDelete = (id: string) => userDelete.run(id);
 
   return (
     <div className="space-y-4">
@@ -55,7 +61,8 @@ export default function DepartmentAdviserManagementPage() {
         <table className="w-full text-sm">
           <thead className="border-b text-left font-semibold">
             <tr>
-              <th>Name</th>
+              <th>First Name</th>
+              <th>Last Name</th>
               <th>Email</th>
               <th>Department</th>
               <th>Status</th>
@@ -71,7 +78,8 @@ export default function DepartmentAdviserManagementPage() {
                     da.isEnabled ? "bg-green-100" : "bg-gray-100"
                   }`}
                 >
-                  <td className="py-2 pl-1">{da.name}</td>
+                  <td className="py-2 pl-1">{da.firstName}</td>
+                  <td className="py-2 pl-1">{da.lastName}</td>
                   <td>{da.email}</td>
                   <td>{da.department}</td>
                   <td>

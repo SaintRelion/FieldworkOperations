@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Settings } from "@/models/settings";
 import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperations } from "@saintrelion/data-access-layer";
+import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
 import { useMemo } from "react";
 
 const SettingsPage = () => {
@@ -20,7 +20,7 @@ const SettingsPage = () => {
     useSelect: settingsSelect,
     useInsert: settingsInsert,
     useUpdate: settingsUpdate,
-  } = useDBOperations<Settings>("Settings");
+  } = useDBOperationsLocked<Settings>("Settings");
 
   // load settings for current department
   const { data: settingsList = [] } = settingsSelect({
@@ -49,7 +49,7 @@ const SettingsPage = () => {
 
   const handleSave = () => {
     if (settings.id == "") {
-      settingsInsert.mutate({
+      settingsInsert.run({
         department: settings.department,
         timeIn: settings.timeIn,
         timeOut: settings.timeOut,
@@ -57,7 +57,7 @@ const SettingsPage = () => {
         penaltyRate: settings.penaltyRate,
       });
     } else {
-      settingsUpdate.mutate({
+      settingsUpdate.run({
         field: "id",
         value: settings.id,
         updates: {

@@ -1,6 +1,6 @@
 export interface AttendanceLog {
   id: string;
-  userID: string;
+  userId: string;
   type: string;
   location: number[];
   image: string;
