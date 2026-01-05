@@ -9,7 +9,8 @@ mockRegister<User>("User", [
   // 🟣 Super Admins
   {
     id: "6",
-    name: "Super Admin",
+    firstName: "Super Admin",
+    lastName: "Last",
     email: "super.admin@univ.edu",
     department: "CCS", // ✅ null/none for superadmin
     role: "superadmin",
@@ -19,7 +20,8 @@ mockRegister<User>("User", [
   // 🟠 Department Adviser
   {
     id: "3",
-    name: "Engr. Ana Lopez",
+    firstName: "Engr. Ana Lopez",
+    lastName: "Last",
     email: "ana.lopez@univ.edu",
     department: "COE",
     role: "departmentadviser",
@@ -27,7 +29,8 @@ mockRegister<User>("User", [
   },
   {
     id: "4",
-    name: "Mr. Carlo Ramos",
+    firstName: "Mr. Carlo Ramos",
+    lastName: "Last",
     email: "carlo.ramos@univ.edu",
     department: "CCS",
     role: "departmentadviser",
@@ -37,7 +40,8 @@ mockRegister<User>("User", [
   // 🟡 Interns
   {
     id: "7",
-    name: "Mark Reyes",
+    firstName: "Mark Reyes",
+    lastName: "Last",
     email: "mark.reyes@student.edu",
     department: "CCS",
     role: "intern",
@@ -45,7 +49,8 @@ mockRegister<User>("User", [
   },
   {
     id: "8",
-    name: "Sophia Gomez",
+    firstName: "Sophia Gomez",
+    lastName: "Last",
     email: "sophia.gomez@student.edu",
     department: "CBA",
     role: "intern",
@@ -53,7 +58,8 @@ mockRegister<User>("User", [
   },
   {
     id: "9",
-    name: "Liam Cruz",
+    firstName: "Liam Cruz",
+    lastName: "Last",
     email: "liam.cruz@student.edu",
     department: "COE",
     role: "intern",
@@ -61,7 +67,8 @@ mockRegister<User>("User", [
   },
   {
     id: "10",
-    name: "Ella Santos",
+    firstName: "Ella Santos",
+    lastName: "Last",
     email: "ella.santos@student.edu",
     department: "CCS",
     role: "intern",
@@ -69,7 +76,8 @@ mockRegister<User>("User", [
   },
   {
     id: "11",
-    name: "Noah Villanueva",
+    firstName: "Noah Villanueva",
+    lastName: "Last",
     email: "noah.villanueva@student.edu",
     department: "CBA",
     role: "intern",
@@ -77,7 +85,8 @@ mockRegister<User>("User", [
   },
   {
     id: "12",
-    name: "Ava Dela Cruz",
+    firstName: "Ava Dela Cruz",
+    lastName: "Last",
     email: "ava.delacruz@student.edu",
     department: "CBA",
     role: "intern",
@@ -85,7 +94,8 @@ mockRegister<User>("User", [
   },
   {
     id: "13",
-    name: "Ava Dela Croos",
+    firstName: "Ava Dela Croos",
+    lastName: "Last",
     email: "ava.delacroos@student.edu",
     department: "CCS",
     role: "intern",

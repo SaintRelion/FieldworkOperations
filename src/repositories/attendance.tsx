@@ -11,7 +11,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 7 - Manila
   {
     id: "1",
-    userID: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
+    userId: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
     type: "in",
     location: [14.5995, 120.9842],
     image: "https://picsum.photos/200/120?random=1",
@@ -19,7 +19,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "2",
-    userID: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
+    userId: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
     type: "out",
     location: [14.6, 120.985],
     image: "https://picsum.photos/200/120?random=2",
@@ -27,7 +27,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "3",
-    userID: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
+    userId: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
     type: "in",
     location: [14.5998, 120.9848],
     image: "https://picsum.photos/200/120?random=3",
@@ -35,7 +35,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "4",
-    userID: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
+    userId: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
     type: "out",
     location: [14.6002, 120.9855],
     image: "https://picsum.photos/200/120?random=4",
@@ -43,7 +43,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "5",
-    userID: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
+    userId: "OSfy0IBRXBZdHhHKR7eYMPLqAK83",
     type: "update",
     location: [14.601, 120.986],
     image: "https://picsum.photos/200/120?random=5",
@@ -53,7 +53,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 8 - Cebu
   {
     id: "6",
-    userID: "8",
+    userId: "8",
     type: "in",
     location: [10.3157, 123.8854],
     image: "https://picsum.photos/200/120?random=6",
@@ -61,7 +61,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "7",
-    userID: "8",
+    userId: "8",
     type: "out",
     location: [10.3165, 123.887],
     image: "https://picsum.photos/200/120?random=7",
@@ -69,7 +69,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "8",
-    userID: "8",
+    userId: "8",
     type: "in",
     location: [10.317, 123.8865],
     image: "https://picsum.photos/200/120?random=8",
@@ -77,7 +77,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "9",
-    userID: "8",
+    userId: "8",
     type: "out",
     location: [10.318, 123.8878],
     image: "https://picsum.photos/200/120?random=9",
@@ -85,7 +85,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "10",
-    userID: "8",
+    userId: "8",
     type: "update",
     location: [10.319, 123.889],
     image: "https://picsum.photos/200/120?random=10",
@@ -95,7 +95,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 9 - Davao
   {
     id: "11",
-    userID: "9",
+    userId: "9",
     type: "in",
     location: [7.1907, 125.4553],
     image: "https://picsum.photos/200/120?random=11",
@@ -103,7 +103,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "12",
-    userID: "9",
+    userId: "9",
     type: "out",
     location: [7.1915, 125.456],
     image: "https://picsum.photos/200/120?random=12",
@@ -111,7 +111,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "13",
-    userID: "9",
+    userId: "9",
     type: "in",
     location: [7.192, 125.4575],
     image: "https://picsum.photos/200/120?random=13",
@@ -119,7 +119,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "14",
-    userID: "9",
+    userId: "9",
     type: "out",
     location: [7.193, 125.4585],
     image: "https://picsum.photos/200/120?random=14",
@@ -127,7 +127,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "15",
-    userID: "9",
+    userId: "9",
     type: "update",
     location: [7.194, 125.459],
     image: "https://picsum.photos/200/120?random=15",
@@ -137,7 +137,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 10 - Baguio
   {
     id: "16",
-    userID: "10",
+    userId: "10",
     type: "in",
     location: [16.4023, 120.596],
     image: "https://picsum.photos/200/120?random=16",
@@ -145,7 +145,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "17",
-    userID: "10",
+    userId: "10",
     type: "out",
     location: [16.403, 120.597],
     image: "https://picsum.photos/200/120?random=17",
@@ -153,7 +153,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "18",
-    userID: "10",
+    userId: "10",
     type: "in",
     location: [16.404, 120.598],
     image: "https://picsum.photos/200/120?random=18",
@@ -161,7 +161,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "19",
-    userID: "10",
+    userId: "10",
     type: "out",
     location: [16.405, 120.599],
     image: "https://picsum.photos/200/120?random=19",
@@ -169,7 +169,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "20",
-    userID: "10",
+    userId: "10",
     type: "update",
     location: [16.406, 120.6],
     image: "https://picsum.photos/200/120?random=20",
@@ -179,7 +179,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 11 - Iloilo
   {
     id: "21",
-    userID: "11",
+    userId: "11",
     type: "in",
     location: [10.7202, 122.5621],
     image: "https://picsum.photos/200/120?random=21",
@@ -187,7 +187,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "22",
-    userID: "11",
+    userId: "11",
     type: "out",
     location: [10.721, 122.563],
     image: "https://picsum.photos/200/120?random=22",
@@ -195,7 +195,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "23",
-    userID: "11",
+    userId: "11",
     type: "in",
     location: [10.722, 122.564],
     image: "https://picsum.photos/200/120?random=23",
@@ -203,7 +203,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "24",
-    userID: "11",
+    userId: "11",
     type: "out",
     location: [10.723, 122.565],
     image: "https://picsum.photos/200/120?random=24",
@@ -211,7 +211,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "25",
-    userID: "11",
+    userId: "11",
     type: "update",
     location: [10.724, 122.566],
     image: "https://picsum.photos/200/120?random=25",
@@ -221,7 +221,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   // User 12 - Clark
   {
     id: "26",
-    userID: "12",
+    userId: "12",
     type: "in",
     location: [15.185, 120.56],
     image: "https://picsum.photos/200/120?random=26",
@@ -229,7 +229,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "27",
-    userID: "12",
+    userId: "12",
     type: "out",
     location: [15.186, 120.561],
     image: "https://picsum.photos/200/120?random=27",
@@ -237,7 +237,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "28",
-    userID: "12",
+    userId: "12",
     type: "in",
     location: [15.187, 120.562],
     image: "https://picsum.photos/200/120?random=28",
@@ -245,7 +245,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "29",
-    userID: "12",
+    userId: "12",
     type: "out",
     location: [15.188, 120.563],
     image: "https://picsum.photos/200/120?random=29",
@@ -253,7 +253,7 @@ mockRegister<AttendanceLog>("AttendanceLog", [
   },
   {
     id: "30",
-    userID: "12",
+    userId: "12",
     type: "update",
     location: [15.189, 120.564],
     image: "https://picsum.photos/200/120?random=30",

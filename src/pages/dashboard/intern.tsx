@@ -60,7 +60,7 @@ export default function InternDashboardPage() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
     firebaseOptions: {
-      filterField: ["userID"],
+      filterField: ["userId"],
       value: [user.id],
       // sort: { field: "createdAt", direction: "desc" },
     },
@@ -207,18 +207,28 @@ export default function InternDashboardPage() {
                       const img = capture();
 
                       // Find today's logs
-                      const today = new Date().toISOString().slice(0, 10);
+                      const today = getCurrentDateTimeString().slice(0, 10);
                       const todayLogs = attendanceLogs.filter((log) => {
-                        const logDate = new Date(log.createdAt)
-                          .toISOString()
-                          .slice(0, 10);
-                        return logDate === today && log.userId === user.id;
+                        const asDate = toDate(log.createdAt);
+
+                        if (asDate) {
+                          const logDate = asDate.toISOString().slice(0, 10);
+                          return logDate === today && log.userId === user.id;
+                        } else {
+                          console.error(
+                            "This shouldnt happen: ",
+                            log.createdAt,
+                            " invalid",
+                          );
+                        }
                       });
 
                       const timeInLog = todayLogs.find((l) => l.type === "in");
                       if (timeInLog) {
-                        const timeIn = new Date(timeInLog.createdAt);
-                        const current = new Date(); // use real local time instead of liveTime if it's in UTC
+                        const timeIn = toDate(timeInLog.createdAt);
+                        const current = toDate(getCurrentDateTimeString());
+
+                        if (current == null || timeIn == null) return;
 
                         const [outHour, outMin] = (
                           settingsList[0]?.timeOut ?? "17:00"
