@@ -1,10 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { useAuth } from "@saintrelion/auth-lib";
-import type { InternInfo } from "@/models/intern-info";
-import type { AttendanceLog } from "@/models/attendance";
-import type { User } from "@/models/user";
-import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
+import { useCurrentUser } from "@saintrelion/auth-lib";
+import type { InternInfo } from "@/models/InternInfo";
+import type { Attendance } from "@/models/Attendance";
+import type { User } from "@/models/User";
+import { useResourceLocked } from "@saintrelion/data-access-layer";
 import { RenderTable } from "@saintrelion/ui";
 import { formatReadableDate, isSameDay } from "@saintrelion/time-functions";
 
@@ -18,8 +18,10 @@ const columns: ColumnDef<InternTableRow>[] = [
     header: "Progress",
     cell: ({ row }) => {
       const { remainingHours, requiredHours } = row.original;
-      const total = requiredHours;
-      const percent = Math.round(((total - remainingHours) / total) * 100);
+      const total = parseInt(requiredHours);
+      const percent = Math.round(
+        ((total - parseInt(remainingHours)) / total) * 100,
+      );
       return <span>{percent}%</span>;
     },
   },
@@ -50,34 +52,30 @@ interface InternTableRow {
   program: string;
   schoolYear: string;
   trainingCompany: string;
-  remainingHours: number;
-  requiredHours: number;
+  remainingHours: string;
+  requiredHours: string;
   accomplished: boolean;
 }
 
 export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
   const selectedDateAsString = selectedDate?.toDateString() ?? "";
-  const { user } = useAuth();
+  const user = useCurrentUser<User>();
 
-  const { useSelect: userSelect } = useDBOperationsLocked<User>("User");
-  const { useSelect: internInfoSelect } =
-    useDBOperationsLocked<InternInfo>("InternInfo");
-  const { useSelect: attendanceSelect } =
-    useDBOperationsLocked<AttendanceLog>("AttendanceLog");
+  const { useList: getUsers } = useResourceLocked<User>("user");
+  const { useList: getInternInfos } =
+    useResourceLocked<InternInfo>("interninfo");
+  const { useList: getAttendance } =
+    useResourceLocked<Attendance>("attendance");
 
-  const { data: interns = [] } = userSelect({
-    mockOptions: {
-      filterFn: (u) => u.role === "intern" && u.department === user.department,
+  const interns = getUsers({
+    filters: {
+      role: "intern",
+      department: user.department,
     },
-    firebaseOptions: {
-      filterField: ["role", "department"],
-      value: ["intern", user?.department],
-      // sort: { field: "createdAt", direction: "desc" },
-    },
-  });
+  }).data;
 
-  const { data: internInfos = [] } = internInfoSelect();
-  const { data: attendanceLogs = [] } = attendanceSelect();
+  const internInfos = getInternInfos().data;
+  const attendance = getAttendance().data;
 
   const internTableData: InternTableRow[] = useMemo(() => {
     return interns.map((intern) => {
@@ -90,15 +88,15 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
         program: info?.program ?? "-",
         schoolYear: info?.schoolYear ?? "-",
         trainingCompany: info?.trainingCompany ?? "-",
-        remainingHours: info?.remainingHours ?? 0,
-        requiredHours: info?.requiredHours ?? 0,
+        remainingHours: info?.remainingHours ?? "0",
+        requiredHours: info?.requiredHours ?? "0",
         accomplished: info?.accomplished ?? false,
       };
     });
   }, [interns, internInfos]);
 
   const logsForDay = selectedDate
-    ? attendanceLogs.filter((attendance) =>
+    ? attendance.filter((attendance) =>
         isSameDay(attendance.createdAt, selectedDateAsString),
       )
     : [];

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 interface CameraCaptureProps {
   /** Custom UI (buttons, etc.) rendered below the camera feed */
   children?: (controls: {
-    capture: () => void;
+    capture: () => string;
     isCapturing: boolean;
     reset: () => void;
   }) => ReactNode;
@@ -43,11 +43,11 @@ export function CameraCapture({
   };
 
   const capture = () => {
-    if (isCapturing || !videoRef.current || !canvasRef.current) return;
+    if (isCapturing || !videoRef.current || !canvasRef.current) return "";
     setIsCapturing(true);
 
     const ctx = canvasRef.current.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return "";
 
     const w = !width ? videoRef.current.videoWidth : width;
     const h = !height ? videoRef.current.videoHeight : height;

@@ -3,11 +3,12 @@ import UserMenu from "./UserMenu";
 import { Menu } from "lucide-react";
 
 import { useState, type ReactNode } from "react";
-import { useAuth } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@saintrelion/auth-lib";
 import { renderNavItems } from "@saintrelion/routers";
+import type { User } from "@/models/User";
 
 const SpecialHeader = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const user = useCurrentUser<User>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -30,7 +31,7 @@ const SpecialHeader = ({ children }: { children: ReactNode }) => {
 
         <nav className="flex flex-col space-y-2">
           {renderNavItems({
-            role: user.role ?? "",
+            role: user.roles ? user.roles[0] : "",
             baseClassName:
               "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all text-muted-foreground hover:bg-muted hover:text-primary",
             activeClassName:

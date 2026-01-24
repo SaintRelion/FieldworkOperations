@@ -2,25 +2,21 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
-import type { User } from "@/models/user";
+import { useResourceLocked } from "@saintrelion/data-access-layer";
+import type { UpdateUser, User } from "@/models/User";
 
 export default function DepartmentAdviserManagementPage() {
   const {
-    useSelect: userSelect,
-    useUpdate: userUpdate,
-    useDelete: userDelete,
-  } = useDBOperationsLocked<User>("User");
+    useList: getUsers,
+    useUpdate: updateUser,
+    useDelete: deleteUser,
+  } = useResourceLocked<User, never, UpdateUser>("user");
 
-  const { data: departmentAdvisers = [] } = userSelect({
-    mockOptions: {
-      filterFn: (u) => u.role === "departmentadviser",
+  const departmentAdvisers = getUsers({
+    filters: {
+      role: "departmentadviser",
     },
-    firebaseOptions: {
-      filterField: ["role"],
-      value: ["departmentadviser"],
-    },
-  });
+  }).data;
   const [search, setSearch] = useState("");
 
   const filtered = departmentAdvisers.filter((s) => {
@@ -35,14 +31,13 @@ export default function DepartmentAdviserManagementPage() {
     const admin = departmentAdvisers.find((a) => a.id === id);
     if (!admin) return;
 
-    userUpdate.run({
-      field: "id",
-      value: id,
-      updates: { isEnabled: !admin.isEnabled },
+    updateUser.run({
+      id: id,
+      payload: { isEnabled: !admin.isEnabled },
     });
   };
 
-  const handleDelete = (id: string) => userDelete.run(id);
+  const handleDelete = (id: string) => deleteUser.run(id);
 
   return (
     <div className="space-y-4">
@@ -112,7 +107,7 @@ export default function DepartmentAdviserManagementPage() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={8} className="py-4 text-center text-gray-500">
-                  No students found.
+                  No advisers found.
                 </td>
               </tr>
             )}

@@ -10,13 +10,13 @@ import { router } from "./navigations";
 
 import "@/lib/firebase-client";
 
-import "@/data-access-config";
-import "@/repositories/attendance";
-import "@/repositories/intern-info";
-import "@/repositories/notification";
-import "@/repositories/ojt-yearly-range";
-import "@/repositories/user";
-import "@/repositories/settings";
+import "@/sr-config";
+import "@/repositories/AttendanceRepo";
+import "@/repositories/InternInfoRepo";
+import "@/repositories/NotificationRepo";
+import "@/repositories/OjtYearlyRangeRepo";
+import "@/repositories/UserRepo";
+import "@/repositories/SettingsRepo";
 
 const queryClient = new QueryClient();
 

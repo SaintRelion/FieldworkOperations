@@ -1,12 +1,37 @@
-import type { AttendanceLog } from "@/models/attendance";
-import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
-import { formatReadableDate, toDate } from "@saintrelion/time-functions";
+import type { Attendance } from "@/models/Attendance";
+import type { User } from "@/models/User";
+import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useResourceLocked } from "@saintrelion/data-access-layer";
+import {
+  formatReadableDate,
+  formatReadableDateTime,
+  toDate,
+} from "@saintrelion/time-functions";
 
-const typeColors: Record<string, string> = {
-  in: "bg-green-100 text-green-700 border-green-300",
-  out: "bg-red-100 text-red-700 border-red-300",
-  update: "bg-blue-100 text-blue-700 border-blue-300",
+const LOG_TYPE_META: Record<
+  "time-in" | "break-in" | "break-out" | "time-out",
+  { label: string; color: string; bg: string }
+> = {
+  "time-in": {
+    label: "Time In",
+    color: "text-green-700",
+    bg: "bg-green-100",
+  },
+  "break-in": {
+    label: "Break In",
+    color: "text-blue-700",
+    bg: "bg-blue-100",
+  },
+  "break-out": {
+    label: "Break Out",
+    color: "text-yellow-700",
+    bg: "bg-yellow-100",
+  },
+  "time-out": {
+    label: "Time Out",
+    color: "text-red-700",
+    bg: "bg-red-100",
+  },
 };
 
 function formatDateTime(datetime: string) {
@@ -25,59 +50,50 @@ function formatDateTime(datetime: string) {
 }
 
 const AttendanceRecord = () => {
-  const { user } = useAuth();
+  const user = useCurrentUser<User>();
 
   // Intern Attendance Select
-  const { useSelect: attendanceSelect } =
-    useDBOperationsLocked<AttendanceLog>("AttendanceLog");
+  const { useList: getAttendance } =
+    useResourceLocked<Attendance>("attendance");
 
-  const { data: records = [] } = attendanceSelect({
-    mockOptions: {
-      filterFn: (log) => log.userId === user.id,
-      sortFn: (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    },
-    firebaseOptions: {
-      filterField: "userId",
-      value: user.id,
-    },
-  });
+  const attendance =
+    getAttendance({
+      filters: { userId: user.id },
+    }).data ?? [];
 
-  const grouped = records.reduce(
+  // Group by date
+  const grouped = attendance.reduce(
     (acc, rec) => {
-      const date = formatReadableDate(rec.createdAt); // take only the date part
+      const date = formatReadableDate(rec.createdAt);
       if (!acc[date]) acc[date] = [];
       acc[date].push(rec);
       return acc;
     },
-    {} as Record<string, AttendanceLog[]>,
+    {} as Record<string, Attendance[]>,
   );
 
+  // Sort groups by date descending
   const sortedGrouped = Object.entries(grouped).sort(([dateA], [dateB]) => {
     const toDateB = toDate(dateB);
     const toDateA = toDate(dateA);
-
-    if (toDateB != null && toDateA != null)
-      return toDateB.getTime() - toDateA.getTime();
-
+    if (toDateB && toDateA) return toDateB.getTime() - toDateA.getTime();
     return -1;
   });
 
   return (
-    <div>
-      <h1>Attendance Record</h1>
-      {records.length === 0 ? (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Attendance Record</h1>
+
+      {attendance.length === 0 ? (
         <p className="text-sm text-gray-500">No attendance found.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="max-h-[600px] space-y-6 overflow-y-auto p-2">
           {sortedGrouped.map(([date, logs]) => {
             const sortedLogs = logs.sort((a, b) => {
               const toDateB = toDate(b.createdAt);
               const toDateA = toDate(a.createdAt);
-
-              if (toDateB != null && toDateA != null)
+              if (toDateB && toDateA)
                 return toDateB.getTime() - toDateA.getTime();
-
               return -1;
             });
 
@@ -86,30 +102,62 @@ const AttendanceRecord = () => {
                 <h3 className="mb-2 text-sm font-medium text-gray-600">
                   {formatDateTime(date).date}
                 </h3>
+
                 <ul className="space-y-2">
-                  {sortedLogs.map((rec, idx) => {
+                  {sortedLogs.map((rec) => {
+                    const meta = LOG_TYPE_META[rec.type];
+
                     return (
                       <li
-                        key={idx}
-                        className={`flex items-center gap-3 rounded-md border p-2 ${typeColors[rec.type] || ""}`}
+                        key={rec.id}
+                        className="flex gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm"
                       >
+                        {/* Attendance Image */}
                         <img
                           src={rec.image}
                           alt="Attendance snapshot"
-                          width={80}
-                          height={60}
-                          className="rounded-md"
+                          className="h-20 w-24 rounded-md border object-cover"
                         />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {formatReadableDate(rec.createdAt)}
-                          </p>
-                          <p className="text-xs">
+
+                        {/* Log Details */}
+                        <div className="flex-1 space-y-1">
+                          {/* Type badge */}
+                          <div
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${meta.color} ${meta.bg}`}
+                          >
+                            {meta.label}
+                          </div>
+
+                          {/* Timestamp */}
+                          <div className="text-sm text-gray-900">
+                            {formatReadableDateTime(rec.createdAt)}
+                          </div>
+
+                          {/* Location */}
+                          <div className="text-muted-foreground text-xs">
                             Lat: {rec.location[0]}, Lng: {rec.location[1]}
-                          </p>
-                          <span className="mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold">
-                            {rec.type.toUpperCase()}
-                          </span>
+                          </div>
+
+                          {/* Evaluation Status */}
+                          {rec.attribute ? (
+                            <div
+                              className={`text-xs font-medium ${
+                                rec.attribute === "excused"
+                                  ? "text-blue-600"
+                                  : rec.attribute === "tardy"
+                                    ? "text-yellow-600"
+                                    : "text-red-600"
+                              }`}
+                            >
+                              {rec.attribute === "excused" && "🟦 Excused"}
+                              {rec.attribute === "tardy" && "🟨 Tardy"}
+                              {rec.attribute === "absent" && "🟥 Absent"}
+                            </div>
+                          ) : (
+                            <div className="text-xs font-medium text-orange-600">
+                              ⏳ Pending Evaluation
+                            </div>
+                          )}
                         </div>
                       </li>
                     );
@@ -123,4 +171,5 @@ const AttendanceRecord = () => {
     </div>
   );
 };
+
 export default AttendanceRecord;

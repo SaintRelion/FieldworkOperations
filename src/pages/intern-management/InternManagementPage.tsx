@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-import { useAuth } from "@saintrelion/auth-lib";
-import { useDBOperationsLocked } from "@saintrelion/data-access-layer";
-import type { User } from "@/models/user";
-import type { InternInfo } from "@/models/intern-info";
+import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useResourceLocked } from "@saintrelion/data-access-layer";
+import type { UpdateUser, User } from "@/models/User";
+import type { InternInfo } from "@/models/InternInfo";
 import { RenderTable } from "@saintrelion/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -15,6 +15,7 @@ interface InternRow {
   email: string;
   program: string;
   trainingCompany: string;
+  remainingHours: string;
   requiredHours: number;
   isEnabled: boolean;
 }
@@ -31,6 +32,7 @@ export default function InternManagementPage() {
       header: "Training Company",
       accessorKey: "trainingCompany",
     },
+    { header: "Remaining Hours", accessorKey: "remainingHours" },
     { header: "Required Hours", accessorKey: "requiredHours" },
     {
       header: "Status",
@@ -74,30 +76,26 @@ export default function InternManagementPage() {
     },
   ];
 
-  const { user } = useAuth();
+  const user = useCurrentUser<User>();
 
   const {
-    useSelect: userSelect,
+    useList: getUsers,
     useUpdate: userUpdate,
     useDelete: userDelete,
-  } = useDBOperationsLocked<User>("User");
+  } = useResourceLocked<User, never, UpdateUser>("user");
 
-  const { useSelect: internSelect } =
-    useDBOperationsLocked<InternInfo>("InternInfo");
+  const { useList: selectInternInfos } =
+    useResourceLocked<InternInfo>("interninfo");
 
   // TODO: Make documentation on this, Firebase and Mock merging of data, API is a single endpoint
   // Intern Management
-  const { data: internInfos = [] } = internSelect();
-  const { data: interns = [] } = userSelect({
-    mockOptions: {
-      filterFn: (u) => u.role === "intern" && u.department === user?.department,
+  const internInfos = selectInternInfos().data;
+  const interns = getUsers({
+    filters: {
+      role: "intern",
+      department: user.department,
     },
-    firebaseOptions: {
-      filterField: ["role", "department"],
-      value: ["intern", user?.department],
-      // sort: { field: "timeDateISO", direction: "desc" },
-    },
-  });
+  }).data;
 
   const internRow: InternRow[] = interns.map((intern) => {
     const info = internInfos.find((inf) => inf.userId === intern.id);
@@ -109,6 +107,7 @@ export default function InternManagementPage() {
       email: intern.email,
       program: info?.program ?? "—",
       trainingCompany: info?.trainingCompany ?? "—",
+      remainingHours: info?.remainingHours ?? 0,
       requiredHours: info?.requiredHours ?? 0,
       isEnabled: intern.isEnabled,
     } as InternRow;
@@ -119,9 +118,8 @@ export default function InternManagementPage() {
     if (!intern) return;
 
     userUpdate.run({
-      field: "id",
-      value: id,
-      updates: { isEnabled: !intern.isEnabled },
+      id: id,
+      payload: { isEnabled: !intern.isEnabled },
     });
   };
 
