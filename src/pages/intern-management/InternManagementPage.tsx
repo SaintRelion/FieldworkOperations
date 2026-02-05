@@ -84,12 +84,12 @@ export default function InternManagementPage() {
     useDelete: userDelete,
   } = useResourceLocked<User, never, UpdateUser>("user");
 
-  const { useList: selectInternInfos } =
+  const { useList: getInternInfos } =
     useResourceLocked<InternInfo>("interninfo");
 
   // TODO: Make documentation on this, Firebase and Mock merging of data, API is a single endpoint
   // Intern Management
-  const internInfos = selectInternInfos().data;
+  const internInfos = getInternInfos().data;
   const interns = getUsers({
     filters: {
       role: "intern",

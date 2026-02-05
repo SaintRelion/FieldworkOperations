@@ -153,6 +153,10 @@ const AttendanceRecord = () => {
                               {rec.attribute === "tardy" && "🟨 Tardy"}
                               {rec.attribute === "absent" && "🟥 Absent"}
                             </div>
+                          ) : rec.evaluated ? (
+                            <span className="w-fit rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              ✔ Done
+                            </span>
                           ) : (
                             <div className="text-xs font-medium text-orange-600">
                               ⏳ Pending Evaluation

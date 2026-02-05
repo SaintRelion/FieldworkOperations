@@ -87,13 +87,11 @@ export default function DepartmentAttendanceEvaluation() {
     useResourceLocked<InternInfo, never, UpdateInternInfo>("interninfo");
   const { useList: getSettings } = useResourceLocked<Settings>("settings");
 
-  const users = getUsers({}).data;
+  const users = getUsers({ filters: { department: user.department } }).data;
   const attendance = sortByCreatedAt(getAttendance({}).data, "asc");
-  const interns = getInternInfos({
-    // filters: { department: user.department },
-  }).data;
+  const interns = getInternInfos({}).data;
   const settings = getSettings({
-    // filters: { department: user.department },
+    filters: { department: user.department },
   }).data;
 
   const departmentSettings = settings[0];
@@ -103,29 +101,33 @@ export default function DepartmentAttendanceEvaluation() {
     const map: Record<string, Record<string, Attendance[]>> = {};
 
     attendance.forEach((log) => {
-      const d = toDate(log.createdAt);
-      if (!d) return;
+      const userFound = users.find((u) => u.id == log.userId);
 
-      const date =
-        d.getFullYear() +
-        "-" +
-        String(d.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(d.getDate()).padStart(2, "0");
+      if (userFound) {
+        const d = toDate(log.createdAt);
+        if (!d) return;
 
-      if (!map[log.userId]) map[log.userId] = {};
-      if (!map[log.userId][date]) map[log.userId][date] = [];
+        const date =
+          d.getFullYear() +
+          "-" +
+          String(d.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(d.getDate()).padStart(2, "0");
 
-      map[log.userId][date].push(log);
+        if (!map[log.userId]) map[log.userId] = {};
+        if (!map[log.userId][date]) map[log.userId][date] = [];
+
+        map[log.userId][date].push(log);
+      }
     });
 
     return map;
-  }, [attendance]);
+  }, [attendance, users]);
 
   const markExisting = async (
     log: Attendance,
     logsForTheDay: Attendance[], // all logs for this user/date
-    attribute: "excused" | "tardy" | "",
+    attribute: "excused" | "tardy" | "absent" | "",
   ) => {
     const internInfo = interns.find((i) => i.userId === log.userId);
     if (!internInfo) return;
@@ -183,6 +185,21 @@ export default function DepartmentAttendanceEvaluation() {
       finalRemainingHours += ABSENCE_RULES.excused.additionalHours;
     }
 
+    if (attribute === "absent") {
+      const newUnexcused = parseInt(internInfo.unexcusedAbsences) + 1;
+      const addedHours = getAbsencePenaltyHours(newUnexcused);
+      finalRemainingHours += addedHours;
+
+      await updateInternInfo.run({
+        id: internInfo.id,
+        payload: {
+          unexcusedAbsences: newUnexcused.toString(),
+          remainingHours: finalRemainingHours.toString(),
+        },
+      });
+      return;
+    }
+
     // ---- Single update call ----
     await updateInternInfo.run({
       id: internInfo.id,
@@ -196,6 +213,7 @@ export default function DepartmentAttendanceEvaluation() {
     userId: string,
     slot: SlotType,
     attribute: "excused" | "absent",
+    existingImage: string,
   ) => {
     const internInfo = interns.find((i) => i.userId === userId);
 
@@ -206,7 +224,7 @@ export default function DepartmentAttendanceEvaluation() {
       type: slot,
       attribute,
       evaluated: true,
-      image: "",
+      image: existingImage,
       location: [],
     });
 
@@ -242,7 +260,9 @@ export default function DepartmentAttendanceEvaluation() {
     userId: string,
     attribute: "excused" | "absent",
   ) => {
-    await Promise.all(SLOTS.map((slot) => createSlot(userId, slot, attribute)));
+    await Promise.all(
+      SLOTS.map((slot) => createSlot(userId, slot, attribute, "")),
+    );
   };
 
   if (!departmentSettings)
@@ -276,48 +296,67 @@ export default function DepartmentAttendanceEvaluation() {
               /* ---- CURRENT DAY ---- */
               if (today) {
                 return (
-                  <div key={date} className="rounded border bg-slate-50 p-3">
-                    <div className="text-sm text-slate-600">
+                  <div key={date} className="rounded-lg border bg-slate-50 p-3">
+                    {/* Date Header */}
+                    <div className="mb-1 text-sm font-medium text-slate-700">
                       {formatReadableDate(date)}
                     </div>
-                    <div className="text-sm text-gray-500 italic">
+                    <div className="mb-3 text-xs text-slate-500 italic">
                       Day has not ended yet
                     </div>
 
-                    {logs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="mb-2 flex justify-between border-b-1 text-sm"
-                      >
-                        <span>
-                          {log.type} - {formatReadableDateTime(log.createdAt)}
-                        </span>
+                    {/* Logs */}
+                    <div className="space-y-2">
+                      {logs.map((log) => (
+                        <div
+                          key={log.id}
+                          className="flex gap-3 rounded-md border bg-white p-2 text-sm"
+                        >
+                          {/* Image */}
+                          <img
+                            src={log.image}
+                            alt="Attendance snapshot"
+                            className="h-16 w-20 shrink-0 rounded-md border object-cover"
+                          />
 
-                        {!log.evaluated ? (
-                          <div className="text-xs font-medium text-orange-600">
-                            ⏳ Pending Evaluation
+                          {/* Content */}
+                          <div className="flex flex-1 items-center justify-between">
+                            {/* Left */}
+                            <div>
+                              <div className="font-medium">{log.type}</div>
+                              <div className="text-xs text-slate-500">
+                                {formatReadableDateTime(log.createdAt)}
+                              </div>
+                            </div>
+
+                            {/* Status */}
+                            {!log.evaluated ? (
+                              <span className="rounded-md bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                                ⏳ Pending
+                              </span>
+                            ) : log.attribute ? (
+                              <span
+                                className={`rounded-md px-2 py-0.5 text-xs font-medium ${
+                                  log.attribute === "excused"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : log.attribute === "tardy"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-red-100 text-red-700"
+                                }`}
+                              >
+                                {log.attribute === "excused" && "🟦 Excused"}
+                                {log.attribute === "tardy" && "🟨 Tardy"}
+                                {log.attribute === "absent" && "🟥 Absent"}
+                              </span>
+                            ) : (
+                              <span className="rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                ✔ Done
+                              </span>
+                            )}
                           </div>
-                        ) : log.attribute ? (
-                          <div
-                            className={`text-xs font-medium ${
-                              log.attribute === "excused"
-                                ? "text-blue-600"
-                                : log.attribute === "tardy"
-                                  ? "text-yellow-600"
-                                  : "text-red-600"
-                            }`}
-                          >
-                            {log.attribute === "excused" && "🟦 Excused"}
-                            {log.attribute === "tardy" && "🟨 Tardy"}
-                            {log.attribute === "absent" && "🟥 Absent"}
-                          </div>
-                        ) : (
-                          <div className="text-xs font-medium text-green-600">
-                            Done
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               }
@@ -368,7 +407,9 @@ export default function DepartmentAttendanceEvaluation() {
                             <Button
                               size="sm"
                               className="bg-red-600"
-                              onClick={() => createSlot(userId, slot, "absent")}
+                              onClick={() =>
+                                createSlot(userId, slot, "absent", "")
+                              }
                             >
                               Absent
                             </Button>
@@ -376,7 +417,7 @@ export default function DepartmentAttendanceEvaluation() {
                               size="sm"
                               variant="secondary"
                               onClick={() =>
-                                createSlot(userId, slot, "excused")
+                                createSlot(userId, slot, "excused", "")
                               }
                             >
                               Excuse
@@ -393,70 +434,92 @@ export default function DepartmentAttendanceEvaluation() {
                     return (
                       <div
                         key={log.id}
-                        className="mb-2 flex items-center justify-between border-b-1 text-sm"
+                        className="mb-3 flex gap-4 rounded-lg border p-3 text-sm shadow-sm"
                       >
-                        <span>
-                          {slot} — {formatReadableDateTime(log.createdAt)}
-                        </span>
+                        {/* Image */}
+                        <img
+                          src={log.image}
+                          alt="Attendance snapshot"
+                          className="h-20 w-28 shrink-0 rounded-md border object-cover"
+                        />
 
-                        {!log.evaluated ? (
-                          <div className="text-xs font-medium text-orange-600">
-                            ⏳ Pending Evaluation
+                        {/* Middle Content */}
+                        <div className="flex flex-1 flex-col justify-between">
+                          {/* Time Info */}
+                          <div className="text-sm font-medium">
+                            {slot}
+                            <span className="text-muted-foreground ml-2 text-xs">
+                              {formatReadableDateTime(log.createdAt)}
+                            </span>
                           </div>
-                        ) : log.attribute ? (
-                          <div
-                            className={`text-xs font-medium ${
-                              log.attribute === "excused"
-                                ? "text-blue-600"
-                                : log.attribute === "tardy"
-                                  ? "text-yellow-600"
-                                  : "text-red-600"
-                            }`}
-                          >
-                            {log.attribute === "excused" && "🟦 Excused"}
-                            {log.attribute === "tardy" && "🟨 Tardy"}
-                            {log.attribute === "absent" && "🟥 Absent"}
-                          </div>
-                        ) : (
-                          <div className="text-xs font-medium text-green-600">
-                            Done
-                          </div>
-                        )}
 
-                        {!log.evaluated && late && (
-                          <div className="flex gap-2">
+                          {/* Status */}
+                          {!log.evaluated ? (
+                            <span className="w-fit rounded-md bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                              ⏳ Pending Evaluation
+                            </span>
+                          ) : log.attribute ? (
+                            <span
+                              className={`w-fit rounded-md px-2 py-0.5 text-xs font-medium ${
+                                log.attribute === "excused"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : log.attribute === "tardy"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {log.attribute === "excused" && "🟦 Excused"}
+                              {log.attribute === "tardy" && "🟨 Tardy"}
+                              {log.attribute === "absent" && "🟥 Absent"}
+                            </span>
+                          ) : (
+                            <span className="w-fit rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              ✔ Done
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          {!log.evaluated && late && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => markExisting(log, logs, "tardy")}
+                              >
+                                Tardy
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() =>
+                                  markExisting(log, logs, "excused")
+                                }
+                              >
+                                Excuse
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700"
+                                onClick={() =>
+                                  markExisting(log, logs, "absent")
+                                }
+                              >
+                                Absent
+                              </Button>
+                            </>
+                          )}
+
+                          {!log.evaluated && !late && (
                             <Button
                               size="sm"
-                              onClick={() => markExisting(log, logs, "tardy")}
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => markExisting(log, logs, "")}
                             >
-                              Tardy
+                              Allow
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => markExisting(log, logs, "excused")}
-                            >
-                              Excuse
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="bg-red-600"
-                              onClick={() => createSlot(userId, slot, "absent")}
-                            >
-                              Absent
-                            </Button>
-                          </div>
-                        )}
-
-                        {!log.evaluated && !late && (
-                          <Button
-                            size="sm"
-                            className="bg-green-600"
-                            onClick={() => markExisting(log, logs, "")}
-                          >
-                            Allow
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     );
                   })}
