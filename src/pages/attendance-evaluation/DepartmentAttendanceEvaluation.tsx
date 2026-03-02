@@ -190,6 +190,10 @@ export default function DepartmentAttendanceEvaluation() {
       const addedHours = getAbsencePenaltyHours(newUnexcused);
       finalRemainingHours += addedHours;
 
+      if (newUnexcused > 5) {
+        finalRemainingHours = parseInt(internInfo.requiredHours);
+      }
+
       await updateInternInfo.run({
         id: internInfo.id,
         payload: {
@@ -280,7 +284,10 @@ export default function DepartmentAttendanceEvaluation() {
         const u = users.find((x) => x.id === userId);
 
         return (
-          <div key={userId} className="space-y-4 rounded-xl border p-4">
+          <div
+            key={userId}
+            className="space-y-4 rounded-xl border-2 border-black/60 p-4"
+          >
             <div className="font-semibold">
               {u?.firstName} {u?.lastName}
             </div>
@@ -293,8 +300,11 @@ export default function DepartmentAttendanceEvaluation() {
                 logs.map((l) => [l.type, l]),
               ) as Partial<Record<SlotType, Attendance>>;
 
+              const dayCompleted =
+                (slotMap["time-in"] && slotMap["time-out"]) || !today;
+
               /* ---- CURRENT DAY ---- */
-              if (today) {
+              if (!dayCompleted) {
                 return (
                   <div key={date} className="rounded-lg border bg-slate-50 p-3">
                     {/* Date Header */}
@@ -327,6 +337,11 @@ export default function DepartmentAttendanceEvaluation() {
                               <div className="text-xs text-slate-500">
                                 {formatReadableDateTime(log.createdAt)}
                               </div>
+                            </div>
+
+                            {/* Location */}
+                            <div className="text-muted-foreground text-xs">
+                              Lat: {log.location[0]}, Lng: {log.location[1]}
                             </div>
 
                             {/* Status */}
@@ -451,6 +466,11 @@ export default function DepartmentAttendanceEvaluation() {
                             <span className="text-muted-foreground ml-2 text-xs">
                               {formatReadableDateTime(log.createdAt)}
                             </span>
+                          </div>
+
+                          {/* Location */}
+                          <div className="text-muted-foreground text-xs">
+                            Lat: {log.location[0]}, Lng: {log.location[1]}
                           </div>
 
                           {/* Status */}

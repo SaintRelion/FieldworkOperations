@@ -32,15 +32,17 @@ const columns: ColumnDef<InternTableRow>[] = [
   { header: "Remaining Hours", accessorKey: "remainingHours" },
   {
     header: "Accomplished",
-    cell: ({ row }) => (
-      <span
-        className={
-          row.original.accomplished ? "text-green-600" : "text-red-500"
-        }
-      >
-        {row.original.accomplished ? "Yes" : "No"}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const { remainingHours } = row.original;
+
+      return (
+        <span
+          className={remainingHours == "0" ? "text-green-600" : "text-red-500"}
+        >
+          {remainingHours == "0" ? "Yes" : "No"}
+        </span>
+      );
+    },
   },
 ];
 
