@@ -23,7 +23,7 @@ const RegisterPage = () => {
     console.log("Raw submission:", data);
 
     const userId = await auth.register(
-      { ...data, roles: [data.role] },
+      { ...data, isEnabled: false, roles: [data.role] },
       data.password,
     );
 
