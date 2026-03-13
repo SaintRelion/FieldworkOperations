@@ -1,3 +1,4 @@
+import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
@@ -7,6 +8,7 @@ import {
   formatReadableDateTime,
   toDate,
 } from "@saintrelion/time-functions";
+import { useState } from "react";
 
 const LOG_TYPE_META: Record<
   "time-in" | "break-in" | "break-out" | "time-out",
@@ -52,6 +54,9 @@ function formatDateTime(datetime: string) {
 const AttendanceRecord = () => {
   const user = useCurrentUser<User>();
 
+  const [selectedLog, setSelectedLog] = useState<Attendance | null>(null);
+  const [open, setOpen] = useState(false);
+
   // Intern Attendance Select
   const { useList: getAttendance } =
     useResourceLocked<Attendance>("attendance");
@@ -84,6 +89,14 @@ const AttendanceRecord = () => {
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Attendance Record</h1>
 
+      {selectedLog && (
+        <ViewAttendancePopup
+          record={selectedLog}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
+
       {attendance.length === 0 ? (
         <p className="text-sm text-gray-500">No attendance found.</p>
       ) : (
@@ -110,7 +123,11 @@ const AttendanceRecord = () => {
                     return (
                       <li
                         key={rec.id}
-                        className="flex gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm"
+                        onClick={() => {
+                          setSelectedLog(rec);
+                          setOpen(true);
+                        }}
+                        className="flex cursor-pointer gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm hover:shadow-lg"
                       >
                         {/* Attendance Image */}
                         <img

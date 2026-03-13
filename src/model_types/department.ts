@@ -6,4 +6,4 @@ export const Department = {
   CBA: "College of Business",
 };
 
-export type Department = keyof typeof Department;
+export type DepartmentKeys = keyof typeof Department;

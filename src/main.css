@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@import "leaflet/dist/leaflet.css";
+
 /* 3️⃣ Custom dark variant and theme token setup */
 @custom-variant dark (&:is(.dark *));
 
