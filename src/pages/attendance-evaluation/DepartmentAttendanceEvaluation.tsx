@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import { sortByCreatedAt } from "@/lib/utils";
 import type {
   Attendance,
@@ -15,7 +16,7 @@ import {
   formatReadableDateTime,
   toDate,
 } from "@saintrelion/time-functions";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const SLOTS = ["time-in", "break-out", "break-in", "time-out"] as const;
 
@@ -76,6 +77,10 @@ export default function DepartmentAttendanceEvaluation() {
   const user = useCurrentUser<User>();
 
   const { useList: getUsers } = useResourceLocked<User>("user");
+
+  const [selectedLog, setSelectedLog] = useState<Attendance | null>(null);
+  const [open, setOpen] = useState(false);
+
   const {
     useList: getAttendance,
     useInsert: insertAttendance,
@@ -280,6 +285,14 @@ export default function DepartmentAttendanceEvaluation() {
     <div className="space-y-4">
       <h1>Attendance Evaluation – {user.department}</h1>
 
+      {selectedLog && (
+        <ViewAttendancePopup
+          record={selectedLog}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
+
       {Object.entries(grouped).map(([userId, dates]) => {
         const u = users.find((x) => x.id === userId);
 
@@ -320,7 +333,11 @@ export default function DepartmentAttendanceEvaluation() {
                       {logs.map((log) => (
                         <div
                           key={log.id}
-                          className="flex gap-3 rounded-md border bg-white p-2 text-sm"
+                          onClick={() => {
+                            setSelectedLog(log);
+                            setOpen(true);
+                          }}
+                          className="flex cursor-pointer gap-3 rounded-md border bg-white p-2 text-sm hover:shadow-lg"
                         >
                           {/* Image */}
                           <img
@@ -415,7 +432,7 @@ export default function DepartmentAttendanceEvaluation() {
                       return (
                         <div
                           key={slot}
-                          className="mb-2 flex items-center justify-between border-b-1 text-sm text-orange-600"
+                          className="mb-2 flex cursor-pointer items-center justify-between border-b-1 text-sm text-orange-600 hover:shadow-lg"
                         >
                           <span>[{slot}] No record</span>
                           <div className="flex gap-2">
@@ -449,6 +466,10 @@ export default function DepartmentAttendanceEvaluation() {
                     return (
                       <div
                         key={log.id}
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setOpen(true);
+                        }}
                         className="mb-3 flex gap-4 rounded-lg border p-3 text-sm shadow-sm"
                       >
                         {/* Image */}

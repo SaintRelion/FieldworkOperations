@@ -4,7 +4,7 @@ import {
   RenderFormButton,
   RenderFormField,
 } from "@saintrelion/forms";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   const auth = useAuth();
@@ -46,7 +46,7 @@ const LoginPage = () => {
           />
         </RenderForm>
 
-        <p className="mt-2 text-center text-sm text-gray-600">
+        {/* <p className="mt-2 text-center text-sm text-gray-600">
           No account yet?{" "}
           <Link
             to="/register"
@@ -54,7 +54,7 @@ const LoginPage = () => {
           >
             Register here
           </Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );

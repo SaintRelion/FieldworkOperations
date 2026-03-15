@@ -11,7 +11,7 @@ import InternManagementPage from "./pages/intern-management/InternManagementPage
 import AttendanceRecord from "./pages/attendance-record/AttendanceRecord";
 import DepartmentAdviserManagementPage from "./pages/department-adviser-management/DepartmentAdviserManagementPage";
 import LoginPage from "./pages/authentication/LoginPage";
-import RegisterPage from "./pages/authentication/RegisterPage";
+// import RegisterPage from "./pages/authentication/RegisterPage";
 import { roleLayoutMap } from "@saintrelion/auth-lib";
 import { DepartmentAdviserDashboard } from "./pages/dashboard/DepartmentAdviserDashboardPage";
 import InternDashboardPage from "./pages/dashboard/InternDashboardPage";
@@ -31,7 +31,7 @@ registerGroupAppRoutes({
   errorElement: <NotFound />,
   children: [
     { path: "login", auth: true, element: <LoginPage /> },
-    { path: "register", auth: true, element: <RegisterPage /> },
+    // { path: "register", auth: true, element: <RegisterPage /> },
     { path: "admin/login", public: true, element: <AdminLoginPage /> },
   ],
 });
@@ -49,6 +49,12 @@ registerGroupAppRoutes({
       index: true,
       element: <DepartmentAdviserManagementPage />,
       label: "Department Advisers",
+      allowedRoles: ["admin"],
+    },
+    {
+      path: "interns",
+      element: <InternManagementPage />,
+      label: "Interns",
       allowedRoles: ["admin"],
     },
   ],

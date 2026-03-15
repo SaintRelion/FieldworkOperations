@@ -22,7 +22,7 @@
     "@saintrelion/auth-lib": "^5.3.3",
     "@saintrelion/cache": "^1.0.1",
     "@saintrelion/data-access-layer": "^6.2.12",
-    "@saintrelion/forms": "^1.1.12",
+    "@saintrelion/forms": "^1.1.28",
     "@saintrelion/notifications": "^1.0.2",
     "@saintrelion/routers": "^2.1.5",
     "@saintrelion/time-functions": "^1.0.2",

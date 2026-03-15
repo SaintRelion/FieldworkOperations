@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
+import { useCurrentUser } from "@saintrelion/auth-lib";
+import { RegisterDialog } from "@/components/RegisterUserDialog";
 
 export default function DepartmentAdviserManagementPage() {
+  const user = useCurrentUser<User>();
+
   const {
     useList: getUsers,
     useUpdate: updateUser,
@@ -43,6 +47,14 @@ export default function DepartmentAdviserManagementPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Department Adviser List</h1>
+
+        {/* Only show RegisterDialog if user is admin */}
+        {user.roles && user.roles[0] === "admin" && (
+          <RegisterDialog
+            role="departmentadviser"
+            triggerLabel="Register New Adviser"
+          />
+        )}
       </div>
 
       <Input
@@ -60,8 +72,7 @@ export default function DepartmentAdviserManagementPage() {
               <th>Last Name</th>
               <th>Email</th>
               <th>Department</th>
-              <th>Status</th>
-              <th className="text-right">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -77,23 +88,17 @@ export default function DepartmentAdviserManagementPage() {
                   <td className="py-2 pl-1">{da.lastName}</td>
                   <td>{da.email}</td>
                   <td>{da.department}</td>
-                  <td>
-                    <span
-                      className={`rounded py-1 text-xs font-medium ${
-                        da.isEnabled ? "text-green-700" : "text-red-300"
-                      }`}
-                    >
-                      {da.isEnabled ? "Accepted" : "Declined"}
-                    </span>
-                  </td>
-                  <td className="space-x-2 text-right">
+                  <td className="space-x-2">
                     <Button
                       size="sm"
-                      className={`h-7 cursor-pointer text-xs ${da.isEnabled ? "bg-transparent" : "bg-black"}`}
+                      className={`h-7 cursor-pointer text-xs transition-colors duration-200 ${
+                        da.isEnabled
+                          ? "border border-gray-800 bg-white text-black hover:bg-gray-100"
+                          : "bg-black text-white hover:bg-gray-800"
+                      }`}
                       onClick={() => toggleConfirmation(da.id)}
-                      variant={da.isEnabled ? "secondary" : "default"}
                     >
-                      {da.isEnabled ? "Decline" : "Accept"}
+                      {da.isEnabled ? "Restrict" : "Unlock"}
                     </Button>
                     <Trash2
                       className="mr-2 inline-block cursor-pointer text-red-700"

@@ -7,6 +7,7 @@ import type { UpdateUser, User } from "@/models/User";
 import type { InternInfo } from "@/models/InternInfo";
 import { RenderTable } from "@saintrelion/ui";
 import type { ColumnDef } from "@tanstack/react-table";
+import { RegisterDialog } from "@/components/RegisterUserDialog";
 
 interface InternRow {
   id: string;
@@ -35,22 +36,6 @@ export default function InternManagementPage() {
     { header: "Remaining Hours", accessorKey: "remainingHours" },
     { header: "Required Hours", accessorKey: "requiredHours" },
     {
-      header: "Status",
-      accessorKey: "status",
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <span
-            className={`rounded py-1 text-xs font-medium ${
-              user.isEnabled ? "text-green-700" : "text-red-300"
-            }`}
-          >
-            {user.isEnabled ? "Accepted" : "Declined"}
-          </span>
-        );
-      },
-    },
-    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
@@ -59,11 +44,14 @@ export default function InternManagementPage() {
           <div className="space-x-2 text-left">
             <Button
               size="sm"
-              className={`h-7 cursor-pointer text-xs ${user.isEnabled ? "bg-transparent" : "bg-black"}`}
+              className={`h-7 cursor-pointer text-xs transition-colors duration-200 ${
+                user.isEnabled
+                  ? "border bg-red-200 text-black hover:bg-red-100"
+                  : "bg-black text-white hover:bg-gray-800"
+              }`}
               onClick={() => toggleConfirmation(user.id)}
-              variant={user.isEnabled ? "secondary" : "default"}
             >
-              {user.isEnabled ? "Decline" : "Accept"}
+              {user.isEnabled ? "Restrict" : "Unlock"}
             </Button>
             <Trash2
               className="mr-2 inline-block cursor-pointer text-red-700"
@@ -90,12 +78,20 @@ export default function InternManagementPage() {
   // TODO: Make documentation on this, Firebase and Mock merging of data, API is a single endpoint
   // Intern Management
   const internInfos = getInternInfos().data;
-  const interns = getUsers({
-    filters: {
-      role: "intern",
-      department: user.department,
-    },
-  }).data;
+  const interns = getUsers(
+    user.roles && user.roles[0] === "admin"
+      ? {
+          filters: {
+            role: "intern",
+          },
+        }
+      : {
+          filters: {
+            role: "intern",
+            department: user.department,
+          },
+        },
+  ).data;
 
   const internRow: InternRow[] = interns.map((intern) => {
     const info = internInfos.find((inf) => inf.userId === intern.id);
@@ -129,6 +125,10 @@ export default function InternManagementPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Intern List</h1>
+
+        {user.roles && user.roles[0] === "admin" && (
+          <RegisterDialog role="intern" triggerLabel="Register New Intern" />
+        )}
       </div>
 
       <RenderTable

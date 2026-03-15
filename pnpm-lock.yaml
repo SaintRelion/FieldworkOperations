@@ -42,8 +42,8 @@ importers:
         specifier: ^6.2.12
         version: 6.2.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@saintrelion/forms':
-        specifier: ^1.1.12
-        version: 1.1.12(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))
+        specifier: ^1.1.28
+        version: 1.1.28(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))
       '@saintrelion/notifications':
         specifier: ^1.0.2
         version: 1.0.2
@@ -1912,8 +1912,8 @@ packages:
   '@saintrelion/data-access-layer@6.2.12':
     resolution: {integrity: sha512-ITpcZ4l1LsdoKTsPCNck6WWsYRd0XagRb1kGcZ+mvZUB9vOvz4nPm1vib7iGso+yalQ1dgXLgTyE5sxlIVvSmQ==, tarball: https://npm.pkg.github.com/download/@saintrelion/data-access-layer/6.2.12/2867fcb32764136be071bdd455d42bb204b32a13}
 
-  '@saintrelion/forms@1.1.12':
-    resolution: {integrity: sha512-JSdfePPdVEqhRSoFpFmJoLIWSTSrTEoO/aIRc6sf8ft+olcwVhSBDKB++OtQhUHvAPiXOlB3qYu6ZistJW+NJg==, tarball: https://npm.pkg.github.com/download/@saintrelion/forms/1.1.12/5d9eb04d83419289b25400345c7f891d1974f783}
+  '@saintrelion/forms@1.1.28':
+    resolution: {integrity: sha512-15ibJNmMR+stkehTjR7TSERmAZxcmNTQy55X4cnuE2S8+2xMy0IVWgIimsHxhIs/+8BlVKqwkp6zw7zAUqtgoA==, tarball: https://npm.pkg.github.com/download/@saintrelion/forms/1.1.28/feae6aaf86a7291c23b82a815a1b2651046eb2af}
 
   '@saintrelion/notifications@1.0.2':
     resolution: {integrity: sha512-3cM3EO1c2brCpTeaYf42txX3e3IoYIU5dHm59juXA23T3OmjEyWMSRVqnaMVVeGlfi2q0K3Y4kznCu5wxWUfMA==, tarball: https://npm.pkg.github.com/download/@saintrelion/notifications/1.0.2/84787b46fa243c7155ca79f3df978cfd57fa5fb5}
@@ -2441,8 +2441,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  baseline-browser-mapping@2.10.0:
-    resolution: {integrity: sha512-lIyg0szRfYbiy67j9KN8IyeD7q7hcmqnJ1ddWmNt19ItGpNN64mnllmxUNFIOdOm6by97jlL6wfpTTJrmnjWAA==}
+  baseline-browser-mapping@2.10.8:
+    resolution: {integrity: sha512-PCLz/LXGBsNTErbtB6i5u4eLpHeMfi93aUv5duMmj6caNu6IphS4q6UevDnL36sZQv9lrP11dbPKGMaXPwMKfQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -2499,8 +2499,8 @@ packages:
   caniuse-lite@1.0.30001737:
     resolution: {integrity: sha512-BiloLiXtQNrY5UyF0+1nSJLXUENuhka2pzy2Fx5pGxqavdrxSCW4U6Pn/PoG3Efspi2frRbHpBV2XsrPE6EDlw==}
 
-  caniuse-lite@1.0.30001777:
-    resolution: {integrity: sha512-tmN+fJxroPndC74efCdp12j+0rk0RHwV5Jwa1zWaFVyw2ZxAuPeG8ZgWC3Wz7uSjT3qMRQ5XHZ4COgQmsCMJAQ==}
+  caniuse-lite@1.0.30001779:
+    resolution: {integrity: sha512-U5og2PN7V4DMgF50YPNtnZJGWVLFjjsN3zb6uMT5VGYIewieDj1upwfuVNXf4Kor+89c3iCRJnSzMD5LmTvsfA==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -2654,8 +2654,8 @@ packages:
   electron-to-chromium@1.5.209:
     resolution: {integrity: sha512-Xoz0uMrim9ZETCQt8UgM5FxQF9+imA7PBpokoGcZloA1uw2LeHzTlip5cb5KOAsXZLjh/moN2vReN3ZjJmjI9A==}
 
-  electron-to-chromium@1.5.307:
-    resolution: {integrity: sha512-5z3uFKBWjiNR44nFcYdkcXjKMbg5KXNdciu7mhTPo9tB7NbqSNP2sSnGR+fqknZSCwKkBN+oxiiajWs4dT6ORg==}
+  electron-to-chromium@1.5.313:
+    resolution: {integrity: sha512-QBMrTWEf00GXZmJyx2lbYD45jpI3TUFnNIzJ5BBc8piGUDwMPa1GV6HJWTZVvY/eiN3fSopl7NRbgGp9sZ9LTA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -6230,7 +6230,7 @@ snapshots:
       - react
       - react-dom
 
-  '@saintrelion/forms@1.1.12(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))':
+  '@saintrelion/forms@1.1.28(vite@7.1.3(@types/node@24.3.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))':
     dependencies:
       '@fortawesome/fontawesome-free': 7.1.0
       '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.1.8(@types/react@19.1.11))(@types/react@19.1.11)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -6813,7 +6813,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  baseline-browser-mapping@2.10.0: {}
+  baseline-browser-mapping@2.10.8: {}
 
   brace-expansion@1.1.12:
     dependencies:
@@ -6837,9 +6837,9 @@ snapshots:
 
   browserslist@4.28.1:
     dependencies:
-      baseline-browser-mapping: 2.10.0
-      caniuse-lite: 1.0.30001777
-      electron-to-chromium: 1.5.307
+      baseline-browser-mapping: 2.10.8
+      caniuse-lite: 1.0.30001779
+      electron-to-chromium: 1.5.313
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
@@ -6880,7 +6880,7 @@ snapshots:
 
   caniuse-lite@1.0.30001737: {}
 
-  caniuse-lite@1.0.30001777: {}
+  caniuse-lite@1.0.30001779: {}
 
   chalk@4.1.2:
     dependencies:
@@ -7021,7 +7021,7 @@ snapshots:
 
   electron-to-chromium@1.5.209: {}
 
-  electron-to-chromium@1.5.307: {}
+  electron-to-chromium@1.5.313: {}
 
   emoji-regex@8.0.0: {}
 

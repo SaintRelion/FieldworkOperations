@@ -14,6 +14,7 @@ import { LiveClock } from "@/to-be-library/live/live-clock";
 import { CameraCapture } from "@/to-be-library/live/camera-capture";
 import type { User } from "@/models/User";
 import { sortByCreatedAt } from "@/lib/utils";
+import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 
 const LOG_TYPE_META: Record<
   "time-in" | "break-in" | "break-out" | "time-out",
@@ -43,6 +44,9 @@ const LOG_TYPE_META: Record<
 
 export default function InternDashboardPage() {
   const user = useCurrentUser<User>();
+
+  const [selectedLog, setSelectedLog] = useState<Attendance | null>(null);
+  const [open, setOpen] = useState(false);
 
   const { useList: getAttendance, useInsert: insertAttendance } =
     useResourceLocked<Attendance, CreateAttendance>("attendance");
@@ -109,6 +113,14 @@ export default function InternDashboardPage() {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {selectedLog && (
+        <ViewAttendancePopup
+          record={selectedLog}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
+
       {/* Left Side: Live Camera + Controls */}
       <div className="space-y-4">
         <h1>Attendance Tracker</h1>
@@ -188,7 +200,11 @@ export default function InternDashboardPage() {
           return (
             <div
               key={log.id}
-              className="flex gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm"
+              onClick={() => {
+                setSelectedLog(log);
+                setOpen(true);
+              }}
+              className="flex cursor-pointer gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm hover:shadow-lg"
             >
               {/* Attendance Image */}
               <img
