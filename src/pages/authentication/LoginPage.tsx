@@ -4,15 +4,12 @@ import {
   RenderFormButton,
   RenderFormField,
 } from "@saintrelion/forms";
-// import { Link } from "react-router-dom";
+import { Users } from "lucide-react";
 
 const LoginPage = () => {
   const auth = useAuth();
 
   const handleLogin = async (data: Record<string, string>) => {
-    // Normally you'd call API here, then save returned user
-    console.log("Raw submission:", data);
-
     await auth.login({
       username: data.email,
       password: data.password,
@@ -20,43 +17,69 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-      <div className="flex flex-col">
-        <h1 className="text-center text-2xl font-bold">Login</h1>
-        <RenderForm wrapperClassName="w-full min-w-sm rounded-2xl space-y-2">
-          <RenderFormField
-            field={{
-              label: "Email",
-              type: "email",
-              name: "email",
-            }}
-            inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
-          />
+    <div className="flex h-screen w-full items-center justify-center bg-[#f0f9f4]">
+      <div className="w-full max-w-sm px-6">
+        {/* Simple Header */}
+        <div className="mb-8 flex flex-col items-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
+            <Users size={28} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-800">
+            OJT & Instructor <span className="text-emerald-600">Portal</span>
+          </h1>
+          <p className="mt-1 text-xs font-bold tracking-widest text-slate-400 uppercase">
+            Sign in to continue
+          </p>
+        </div>
 
-          <RenderFormField
-            field={{ label: "Password", type: "password", name: "password" }}
-            inputClassName="w-full rounded-md border border-gray-300 py-1 pl-2 focus:ring-1 focus:ring-blue-400 focus:outline-none"
-          />
+        {/* Clean Login Card */}
+        <div className="rounded-2xl border border-emerald-100 bg-white p-8 shadow-xl shadow-emerald-900/5">
+          <RenderForm wrapperClassName="space-y-5">
+            <div className="space-y-1">
+              <label className="ml-1 text-[11px] font-black tracking-wider text-emerald-700/70 uppercase">
+                Email Address
+              </label>
+              <RenderFormField
+                field={{
+                  type: "email",
+                  name: "email",
+                  placeholder: "Enter email",
+                }}
+                inputClassName="w-full rounded-xl border border-emerald-50 bg-emerald-50/30 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
+              />
+            </div>
 
-          <RenderFormButton
-            buttonClassName="w-full rounded-lg bg-blue-600 py-2 font-semibold  transition-colors hover:bg-blue-700"
-            buttonLabel="Login"
-            isDisabled={auth.isLocked}
-            onSubmit={handleLogin}
-          />
-        </RenderForm>
+            <div className="space-y-1">
+              <label className="ml-1 text-[11px] font-black tracking-wider text-emerald-700/70 uppercase">
+                Password
+              </label>
+              <RenderFormField
+                field={{
+                  type: "password",
+                  name: "password",
+                  placeholder: "Enter password",
+                }}
+                inputClassName="w-full rounded-xl border border-emerald-50 bg-emerald-50/30 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
+              />
+            </div>
 
-        {/* <p className="mt-2 text-center text-sm text-gray-600">
-          No account yet?{" "}
-          <Link
-            to="/register"
-            className="font-semibold text-blue-600 hover:underline"
-          >
-            Register here
-          </Link>
-        </p> */}
+            <div className="pt-2">
+              <RenderFormButton
+                buttonClassName="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:bg-slate-300 shadow-lg shadow-slate-200"
+                buttonLabel={auth.isLocked ? "Verifying..." : "Login"}
+                isDisabled={auth.isLocked}
+                onSubmit={handleLogin}
+              />
+            </div>
+          </RenderForm>
+        </div>
+
+        <p className="mt-8 text-center text-[10px] font-bold tracking-[0.3em] text-emerald-800/30 uppercase">
+          Attendance System v2.0
+        </p>
       </div>
     </div>
   );
 };
+
 export default LoginPage;

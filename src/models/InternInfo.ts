@@ -1,7 +1,6 @@
 export interface InternInfo {
   id: string;
   userId: string;
-  program: string;
   schoolYear: string;
   trainingCompany: string;
 
@@ -16,8 +15,6 @@ export interface InternInfo {
 
 export interface CreateInternInfo {
   userId: string;
-  program: string;
-  // schoolYear: string;
   trainingCompany: string;
   remainingHours: string;
   requiredHours: string;

@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
@@ -8,86 +9,91 @@ import {
   formatReadableDateTime,
   toDate,
 } from "@saintrelion/time-functions";
-import { useState } from "react";
+import {
+  Calendar,
+  History,
+  MapPin,
+  CheckCircle2,
+  Timer,
+  ArrowRight,
+} from "lucide-react";
 
-const LOG_TYPE_META: Record<
-  "time-in" | "break-in" | "break-out" | "time-out",
-  { label: string; color: string; bg: string }
+const LOG_TYPE_THEME: Record<
+  string,
+  { label: string; ring: string; text: string; bg: string }
 > = {
   "time-in": {
-    label: "Time In",
-    color: "text-green-700",
-    bg: "bg-green-100",
-  },
-  "break-in": {
-    label: "Break In",
-    color: "text-blue-700",
-    bg: "bg-blue-100",
+    label: "Shift Start",
+    ring: "ring-emerald-500",
+    text: "text-emerald-700",
+    bg: "bg-emerald-50",
   },
   "break-out": {
-    label: "Break Out",
-    color: "text-yellow-700",
-    bg: "bg-yellow-100",
+    label: "Break Started",
+    ring: "ring-amber-500",
+    text: "text-amber-700",
+    bg: "bg-amber-50",
+  },
+  "break-in": {
+    label: "Break Finished",
+    ring: "ring-blue-500",
+    text: "text-blue-700",
+    bg: "bg-blue-50",
   },
   "time-out": {
-    label: "Time Out",
-    color: "text-red-700",
-    bg: "bg-red-100",
+    label: "Shift End",
+    ring: "ring-rose-500",
+    text: "text-rose-700",
+    bg: "bg-rose-50",
   },
 };
 
-function formatDateTime(datetime: string) {
-  const dateObj = new Date(datetime.replace(" ", "T")); // ensure valid Date
-  const date = dateObj.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const time = dateObj.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-  return { date, time };
-}
-
 const AttendanceRecord = () => {
   const user = useCurrentUser<User>();
-
   const [selectedLog, setSelectedLog] = useState<Attendance | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
-  // Intern Attendance Select
   const { useList: getAttendance } =
     useResourceLocked<Attendance>("attendance");
+  const attendance = getAttendance({ filters: { userId: user.id } }).data;
 
-  const attendance =
-    getAttendance({
-      filters: { userId: user.id },
-    }).data ?? [];
+  // 1. Grouping and Sorting Logic (Strict TSX)
+  const sortedGrouped = useMemo(() => {
+    const grouped = attendance.reduce(
+      (acc, rec) => {
+        const date = formatReadableDate(rec.createdAt);
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(rec);
+        return acc;
+      },
+      {} as Record<string, Attendance[]>,
+    );
 
-  // Group by date
-  const grouped = attendance.reduce(
-    (acc, rec) => {
-      const date = formatReadableDate(rec.createdAt);
-      if (!acc[date]) acc[date] = [];
-      acc[date].push(rec);
-      return acc;
-    },
-    {} as Record<string, Attendance[]>,
-  );
-
-  // Sort groups by date descending
-  const sortedGrouped = Object.entries(grouped).sort(([dateA], [dateB]) => {
-    const toDateB = toDate(dateB);
-    const toDateA = toDate(dateA);
-    if (toDateB && toDateA) return toDateB.getTime() - toDateA.getTime();
-    return -1;
-  });
+    return Object.entries(grouped).sort(([dateA], [dateB]) => {
+      const toDateB = toDate(dateB);
+      const toDateA = toDate(dateA);
+      if (toDateB && toDateA) return toDateB.getTime() - toDateA.getTime();
+      return -1;
+    });
+  }, [attendance]);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Attendance Record</h1>
+    <div className="space-y-8 pb-20">
+      {/* HEADER */}
+      <div className="flex items-center justify-between border-b border-slate-200 pb-6">
+        <div>
+          <h1 className="text-3xl font-black tracking-tighter text-slate-800">
+            Attendance <span className="text-emerald-600">Archive</span>
+          </h1>
+          <p className="mt-1 text-xs font-bold tracking-[0.3em] text-slate-400 uppercase">
+            Historical Session Records
+          </p>
+        </div>
+        <div className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-2 text-xs font-bold text-slate-500 shadow-sm sm:flex">
+          <History size={14} className="text-emerald-500" />
+          {attendance.length} Total Sessions
+        </div>
+      </div>
 
       {selectedLog && (
         <ViewAttendancePopup
@@ -98,92 +104,109 @@ const AttendanceRecord = () => {
       )}
 
       {attendance.length === 0 ? (
-        <p className="text-sm text-gray-500">No attendance found.</p>
+        <div className="flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-slate-100 bg-white py-20">
+          <Calendar size={48} className="mb-4 text-slate-200" />
+          <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">
+            No records found yet
+          </p>
+        </div>
       ) : (
-        <div className="max-h-[600px] space-y-6 overflow-y-auto p-2">
+        <div className="space-y-12">
           {sortedGrouped.map(([date, logs]) => {
-            const sortedLogs = logs.sort((a, b) => {
+            const chronologicalLogs = logs.sort((a, b) => {
               const toDateB = toDate(b.createdAt);
               const toDateA = toDate(a.createdAt);
+
               if (toDateB && toDateA)
                 return toDateB.getTime() - toDateA.getTime();
+
               return -1;
             });
 
             return (
-              <div key={date}>
-                <h3 className="mb-2 text-sm font-medium text-gray-600">
-                  {formatDateTime(date).date}
-                </h3>
+              <div key={date} className="group relative">
+                {/* DATE SIDE-LABEL */}
+                <div className="mb-6 flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
+                    <Calendar size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black tracking-tight text-slate-800">
+                      {date}
+                    </h3>
+                    <p className="text-[10px] font-bold tracking-widest text-emerald-600 uppercase">
+                      {logs.length} Activity Entries
+                    </p>
+                  </div>
+                </div>
 
-                <ul className="space-y-2">
-                  {sortedLogs.map((rec) => {
-                    const meta = LOG_TYPE_META[rec.type];
+                {/* TIMELINE STACK */}
+                <div className="relative ml-5 space-y-4 border-l-2 border-slate-200 pb-4 pl-8">
+                  {chronologicalLogs.map((rec, index) => {
+                    const theme =
+                      LOG_TYPE_THEME[rec.type] || LOG_TYPE_THEME["time-in"];
 
                     return (
-                      <li
-                        key={rec.id}
+                      <div
+                        key={index}
                         onClick={() => {
                           setSelectedLog(rec);
                           setOpen(true);
                         }}
-                        className="flex cursor-pointer gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm hover:shadow-lg"
+                        className="group/item relative flex cursor-pointer items-center justify-between rounded-3xl border border-white bg-white p-4 shadow-sm transition-all hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-900/5 active:scale-[0.98]"
                       >
-                        {/* Attendance Image */}
-                        <img
-                          src={rec.image}
-                          alt="Attendance snapshot"
-                          className="h-20 w-24 rounded-md border object-cover"
+                        {/* Timeline Dot Connector */}
+                        <div
+                          className={`absolute top-1/2 -left-[41px] h-4 w-4 -translate-y-1/2 rounded-full border-4 border-[#EDF2F0] bg-white ring-2 ${theme.ring} transition-transform group-hover/item:scale-125`}
                         />
 
-                        {/* Log Details */}
-                        <div className="flex-1 space-y-1">
-                          {/* Type badge */}
-                          <div
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${meta.color} ${meta.bg}`}
-                          >
-                            {meta.label}
+                        <div className="flex items-center gap-6">
+                          {/* Snapshot Thumbnail */}
+                          <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-100 shadow-inner">
+                            <img
+                              src={rec.image}
+                              alt="auth"
+                              className="h-full w-full object-cover transition-transform group-hover/item:scale-110"
+                            />
                           </div>
 
-                          {/* Timestamp */}
-                          <div className="text-sm text-gray-900">
-                            {formatReadableDateTime(rec.createdAt)}
-                          </div>
-
-                          {/* Location */}
-                          <div className="text-muted-foreground text-xs">
-                            Lat: {rec.location[0]}, Lng: {rec.location[1]}
-                          </div>
-
-                          {/* Evaluation Status */}
-                          {rec.attribute ? (
-                            <div
-                              className={`text-xs font-medium ${
-                                rec.attribute === "excused"
-                                  ? "text-blue-600"
-                                  : rec.attribute === "tardy"
-                                    ? "text-yellow-600"
-                                    : "text-red-600"
-                              }`}
-                            >
-                              {rec.attribute === "excused" && "🟦 Excused"}
-                              {rec.attribute === "tardy" && "🟨 Tardy"}
-                              {rec.attribute === "absent" && "🟥 Absent"}
+                          {/* Content */}
+                          <div>
+                            <div className="mb-0.5 flex items-center gap-2">
+                              <span
+                                className={`rounded-md px-2 py-0.5 text-[9px] font-black tracking-widest uppercase ${theme.bg} ${theme.text}`}
+                              >
+                                {theme.label}
+                              </span>
+                              <EvaluationStatus log={rec} />
                             </div>
-                          ) : rec.evaluated ? (
-                            <span className="w-fit rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                              ✔ Done
-                            </span>
-                          ) : (
-                            <div className="text-xs font-medium text-orange-600">
-                              ⏳ Pending Evaluation
+                            <p className="text-base font-black tracking-tight text-slate-800">
+                              {
+                                formatReadableDateTime(rec.createdAt).split(
+                                  "at",
+                                )[1]
+                              }
+                            </p>
+                            <div className="flex items-center gap-1 text-slate-400">
+                              <MapPin size={10} className="text-emerald-500" />
+                              <span className="text-[9px] font-bold tracking-tighter uppercase">
+                                Verified Coordinates
+                              </span>
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </li>
+
+                        {/* Right-side Indicator */}
+                        <div className="hidden pr-4 sm:block">
+                          <ArrowRight
+                            size={18}
+                            className="text-slate-200 transition-colors group-hover/item:text-emerald-500"
+                          />
+                        </div>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </div>
             );
           })}
@@ -192,5 +215,28 @@ const AttendanceRecord = () => {
     </div>
   );
 };
+
+// Internal Evaluation Status Component for Cleanliness
+function EvaluationStatus({ log }: { log: Attendance }) {
+  if (log.attribute) {
+    const styles: Record<string, string> = {
+      excused: "text-blue-500",
+      tardy: "text-amber-500",
+      absent: "text-rose-500",
+    };
+    return (
+      <span
+        className={`text-[9px] font-black uppercase ${styles[log.attribute] || "text-slate-400"}`}
+      >
+        {log.attribute}
+      </span>
+    );
+  }
+  return log.evaluated ? (
+    <CheckCircle2 size={14} className="text-emerald-500" />
+  ) : (
+    <Timer size={14} className="text-slate-300" />
+  );
+}
 
 export default AttendanceRecord;

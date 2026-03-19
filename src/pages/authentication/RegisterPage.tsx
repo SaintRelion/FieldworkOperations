@@ -28,13 +28,12 @@ const RegisterPage = () => {
     );
 
     if (data.role == "intern" && userId) {
-      const { program, requiredHours, trainingCompany } = data;
+      const { requiredHours, trainingCompany } = data;
 
       insertInternInfo.run({
         userId: userId,
         remainingHours: requiredHours,
         accomplished: false,
-        program,
         requiredHours,
         trainingCompany,
         unexcusedAbsences: "0",

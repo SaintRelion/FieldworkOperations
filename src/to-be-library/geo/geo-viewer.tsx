@@ -83,21 +83,21 @@ export function GeoViewer({
         </MapContainer>
       )}
 
-      <div className="bg-opacity-90 w-full rounded bg-white p-4 shadow-md">
-        {coords ? (
-          <p className="flex items-center gap-2">
-            <MapPin className="text-muted-foreground h-4 w-4" />
-            <span>
-              Lat: {coords.lat}, Lng: {coords.lng}
-            </span>
-          </p>
-        ) : (
-          <p>No GPS data yet</p>
-        )}
-        {path.length > 0 && (
-          <p>Total Distance: {(travelledDistance / 1000).toFixed(3)} km</p>
-        )}
-        {showControls && (
+      {showControls && (
+        <div className="bg-opacity-90 w-full rounded bg-white p-4 shadow-md">
+          {coords ? (
+            <p className="flex items-center gap-2">
+              <MapPin className="text-muted-foreground h-4 w-4" />
+              <span>
+                Lat: {coords.lat}, Lng: {coords.lng}
+              </span>
+            </p>
+          ) : (
+            <p>No GPS data yet</p>
+          )}
+          {path.length > 0 && (
+            <p>Total Distance: {(travelledDistance / 1000).toFixed(3)} km</p>
+          )}
           <div className="mt-2 flex space-x-2">
             <button
               onClick={getLocation}
@@ -120,8 +120,8 @@ export function GeoViewer({
               Reset
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {enableLogs && (
         <div className="w-full rounded bg-gray-100 p-2 font-mono text-xs whitespace-pre-wrap">

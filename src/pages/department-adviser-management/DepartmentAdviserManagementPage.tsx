@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search, UserCheck, UserX } from "lucide-react";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { RegisterDialog } from "@/components/RegisterUserDialog";
+import { toast } from "@saintrelion/notifications";
 
 export default function DepartmentAdviserManagementPage() {
   const user = useCurrentUser<User>();
@@ -14,110 +15,161 @@ export default function DepartmentAdviserManagementPage() {
     useList: getUsers,
     useUpdate: updateUser,
     useDelete: deleteUser,
-  } = useResourceLocked<User, never, UpdateUser>("user");
+  } = useResourceLocked<User, never, UpdateUser>("user", { showToast: false });
 
-  const departmentAdvisers = getUsers({
-    filters: {
-      role: "departmentadviser",
-    },
-  }).data;
+  const departmentAdvisers =
+    getUsers({
+      filters: { role: "departmentadviser" },
+    }).data ?? [];
+
   const [search, setSearch] = useState("");
 
   const filtered = departmentAdvisers.filter((s) => {
+    const term = search.toLowerCase();
     return (
-      s.firstName.toLowerCase().includes(search.toLowerCase()) ||
-      s.lastName.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase())
+      s.firstName.toLowerCase().includes(term) ||
+      s.lastName.toLowerCase().includes(term) ||
+      s.email.toLowerCase().includes(term)
     );
   });
 
-  const toggleConfirmation = (id: string) => {
+  const toggleConfirmation = async (id: string) => {
     const admin = departmentAdvisers.find((a) => a.id === id);
     if (!admin) return;
 
-    updateUser.run({
+    // Direct manual execution
+    await updateUser.run({
       id: id,
       payload: { isEnabled: !admin.isEnabled },
     });
+
+    toast.success("Status updated");
   };
 
-  const handleDelete = (id: string) => deleteUser.run(id);
+  const handleDelete = async (id: string) => {
+    if (confirm("Permanently remove this adviser?")) {
+      await deleteUser.run(id);
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Department Adviser List</h1>
+    <div className="space-y-6">
+      {/* HEADER: MINT ACCENTS */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-800">
+            Adviser <span className="text-emerald-600">Management</span>
+          </h1>
+          <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">
+            OJT & Faculty Administration
+          </p>
+        </div>
 
-        {/* Only show RegisterDialog if user is admin */}
-        {user.roles && user.roles[0] === "admin" && (
+        {user.roles?.[0] === "admin" && (
           <RegisterDialog
             role="departmentadviser"
-            triggerLabel="Register New Adviser"
+            triggerLabel="Register New"
           />
         )}
       </div>
 
-      <Input
-        placeholder="Search department admin..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full md:w-1/2"
-      />
+      {/* SEARCH: STRAIGHTFORWARD */}
+      <div className="relative w-full md:w-1/2">
+        <Search
+          className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+          size={16}
+        />
+        <Input
+          placeholder="Filter by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="rounded-xl border-slate-200 bg-white pl-10 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10"
+        />
+      </div>
 
-      <div className="overflow-auto rounded-xl bg-white p-4 shadow">
-        <table className="w-full text-sm">
-          <thead className="border-b text-left font-semibold">
+      {/* TABLE: CLEAN SLATE DESIGN */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-black tracking-widest text-slate-400 uppercase">
             <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Email</th>
-              <th>Department</th>
-              <th>Actions</th>
+              <th className="px-6 py-4">Identity</th>
+              <th className="px-6 py-4">Department</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {filtered.map((da) => {
-              return (
-                <tr
-                  key={da.id}
-                  className={`border-b py-2 ${
-                    da.isEnabled ? "bg-green-100" : "bg-gray-100"
-                  }`}
-                >
-                  <td className="py-2 pl-1">{da.firstName}</td>
-                  <td className="py-2 pl-1">{da.lastName}</td>
-                  <td>{da.email}</td>
-                  <td>{da.department}</td>
-                  <td className="space-x-2">
-                    <Button
-                      size="sm"
-                      className={`h-7 cursor-pointer text-xs transition-colors duration-200 ${
+          <tbody className="divide-y divide-slate-50">
+            {filtered.map((da) => (
+              <tr
+                key={da.id}
+                className="group transition-colors hover:bg-emerald-50/30"
+              >
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl text-[10px] font-black ${
                         da.isEnabled
-                          ? "border border-gray-800 bg-white text-black hover:bg-gray-100"
-                          : "bg-black text-white hover:bg-gray-800"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-400"
                       }`}
-                      onClick={() => toggleConfirmation(da.id)}
                     >
-                      {da.isEnabled ? "Restrict" : "Unlock"}
+                      {da.firstName[0]}
+                      {da.lastName[0]}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-700">
+                        {da.firstName} {da.lastName}
+                      </p>
+                      <p className="text-[11px] text-slate-400">{da.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="rounded-md border border-slate-100 bg-white px-2 py-1 text-[10px] font-black text-slate-500 uppercase">
+                    {da.department}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleConfirmation(da.id)}
+                      className={`h-8 gap-2 rounded-lg px-3 font-bold transition-all active:scale-95 ${
+                        da.isEnabled
+                          ? "border-slate-200 text-slate-600 hover:bg-slate-100"
+                          : "border-transparent bg-slate-900 text-white shadow-md shadow-slate-200 hover:bg-emerald-600"
+                      }`}
+                    >
+                      {da.isEnabled ? (
+                        <UserX size={14} />
+                      ) : (
+                        <UserCheck size={14} />
+                      )}
+                      <span className="text-[11px]">
+                        {da.isEnabled ? "Restrict" : "Unlock"}
+                      </span>
                     </Button>
-                    <Trash2
-                      className="mr-2 inline-block cursor-pointer text-red-700"
-                      size={15}
+
+                    <button
                       onClick={() => handleDelete(da.id)}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-gray-500">
-                  No advisers found.
+                      className="p-2 text-slate-300 transition-colors hover:text-red-500"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
+
+        {filtered.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-sm font-bold tracking-widest text-slate-400 uppercase">
+              No Results Found
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

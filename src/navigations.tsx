@@ -57,6 +57,12 @@ registerGroupAppRoutes({
       label: "Interns",
       allowedRoles: ["admin"],
     },
+    {
+      path: "account",
+      element: <AccountPage />,
+      label: "Account",
+      allowedRoles: ["admin"],
+    },
   ],
 });
 

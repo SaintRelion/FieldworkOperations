@@ -12,7 +12,6 @@ const columns: ColumnDef<InternTableRow>[] = [
   { header: "ID", accessorKey: "id" },
   { header: "First Name", accessorKey: "firstName" },
   { header: "Last Name", accessorKey: "lastName" },
-  { header: "Program", accessorKey: "program" },
   { header: "Training Company", accessorKey: "trainingCompany" },
   {
     header: "Progress",
@@ -51,7 +50,6 @@ interface InternTableRow {
   firstName: string;
   lastName: string;
   email: string;
-  program: string;
   schoolYear: string;
   trainingCompany: string;
   remainingHours: string;
@@ -87,7 +85,6 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
         firstName: intern.firstName,
         lastName: intern.lastName,
         email: intern.email,
-        program: info?.program ?? "-",
         schoolYear: info?.schoolYear ?? "-",
         trainingCompany: info?.trainingCompany ?? "-",
         remainingHours: info?.remainingHours ?? "0",
@@ -119,7 +116,7 @@ export default function InternTable({ selectedDate }: { selectedDate?: Date }) {
         data={internTableData}
         columns={columns}
         hiddenColumns={["id"]}
-        filters={["program", "trainingCompany"]}
+        filters={["trainingCompany"]}
         tableMinWidth={1000}
         dataRowSpecialClassName={(row) => {
           return attendanceSet.has(row.original.id)
