@@ -1,6 +1,13 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, UserCheck, UserX, Briefcase, Clock } from "lucide-react";
+import {
+  Trash2,
+  UserCheck,
+  UserX,
+  Briefcase,
+  Clock,
+  Landmark,
+} from "lucide-react";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
@@ -9,12 +16,14 @@ import { RenderTable } from "@saintrelion/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import { RegisterDialog } from "@/components/RegisterUserDialog";
 import { toast } from "@saintrelion/notifications";
+import { Department } from "@/model_types/department";
 
 interface InternRow {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  department: string;
   trainingCompany: string;
   remainingHours: string;
   requiredHours: number;
@@ -53,6 +62,7 @@ export default function InternManagementPage() {
         firstName: intern.firstName,
         lastName: intern.lastName,
         email: intern.email,
+        department: intern.department,
         trainingCompany: info?.trainingCompany ?? "—",
         remainingHours: info?.remainingHours ?? "0",
         requiredHours: Number(info?.requiredHours ?? 0),
@@ -71,6 +81,38 @@ export default function InternManagementPage() {
     });
 
     toast.success("Status updated");
+  };
+
+  const handleEditDepartment = async (targetUser: User | InternRow) => {
+    const options = Object.keys(Department).join(", ");
+    const input = window.prompt(
+      `Update Department for ${targetUser.firstName}\nAvailable: ${options}`,
+      targetUser.department,
+    );
+
+    // Validation: Must be a valid key from your Department object
+    if (!input) return;
+    const newKey = input.toUpperCase().trim();
+
+    if (!(newKey in Department)) {
+      toast.error(`Invalid Department: ${newKey}`);
+      return;
+    }
+
+    if (newKey === targetUser.department) return;
+
+    try {
+      await userUpdate.run({
+        id: targetUser.id,
+        payload: {
+          department: newKey as keyof typeof Department,
+        },
+      });
+      toast.success("Department Updated");
+    } catch (err) {
+      const error = err as Record<string, string>;
+      toast.error("Update failed: " + error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -109,6 +151,19 @@ export default function InternManagementPage() {
           </div>
         );
       },
+    },
+    {
+      header: "Department",
+      accessorKey: "department",
+      cell: ({ row }) => (
+        <button
+          onClick={() => handleEditDepartment(row.original)}
+          className="flex items-center gap-2 rounded-md border border-slate-100 bg-slate-50/50 px-2 py-1 text-[10px] font-black text-slate-400 uppercase transition-colors hover:bg-white hover:text-emerald-600"
+        >
+          <Landmark size={12} />
+          {row.original.department}
+        </button>
+      ),
     },
     {
       header: "Training Site",

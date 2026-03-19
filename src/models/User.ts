@@ -12,5 +12,6 @@ export interface User extends RawAuthUser {
 }
 
 export interface UpdateUser {
+  department: DepartmentKeys;
   isEnabled: boolean;
 }

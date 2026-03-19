@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, Search, UserCheck, UserX } from "lucide-react";
+import { Trash2, Search, UserCheck, UserX, Landmark } from "lucide-react";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { RegisterDialog } from "@/components/RegisterUserDialog";
 import { toast } from "@saintrelion/notifications";
+import { Department } from "@/model_types/department";
 
 export default function DepartmentAdviserManagementPage() {
   const user = useCurrentUser<User>();
@@ -44,6 +45,38 @@ export default function DepartmentAdviserManagementPage() {
     });
 
     toast.success("Status updated");
+  };
+
+  const handleEditDepartment = async (targetUser: User) => {
+    const options = Object.keys(Department).join(", ");
+    const input = window.prompt(
+      `Update Department for ${targetUser.firstName}\nAvailable: ${options}`,
+      targetUser.department,
+    );
+
+    // Validation: Must be a valid key from your Department object
+    if (!input) return;
+    const newKey = input.toUpperCase().trim();
+
+    if (!(newKey in Department)) {
+      toast.error(`Invalid Department: ${newKey}`);
+      return;
+    }
+
+    if (newKey === targetUser.department) return;
+
+    try {
+      await updateUser.run({
+        id: targetUser.id,
+        payload: {
+          department: newKey as keyof typeof Department,
+        },
+      });
+      toast.success("Department Updated");
+    } catch (err) {
+      const error = err as Record<string, string>;
+      toast.error("Update failed: " + error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -124,9 +157,14 @@ export default function DepartmentAdviserManagementPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="rounded-md border border-slate-100 bg-white px-2 py-1 text-[10px] font-black text-slate-500 uppercase">
-                    {da.department}
-                  </span>
+                  {/* DEPARTMENT EDIT TRIGGER */}
+                  <button
+                    onClick={() => handleEditDepartment(da)} // Opens a small popover or dialog
+                    className="flex items-center gap-2 rounded-md border border-slate-100 bg-white px-2 py-1 text-[10px] font-black text-slate-500 uppercase shadow-sm transition-all hover:border-emerald-200 hover:text-emerald-600"
+                  >
+                    <Landmark size={12} className="text-slate-300" />
+                    <span>{da.department}</span>
+                  </button>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-3">
