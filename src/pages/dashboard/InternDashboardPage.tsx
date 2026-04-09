@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import {
   Camera,
   History,
@@ -43,7 +43,7 @@ export default function InternDashboardPage() {
   const [open, setOpen] = useState<boolean>(false);
 
   const [isMapVisible, setIsMapVisible] = useState<boolean>(true);
-  const coordsRef = useRef<{ lat: number; lng: number }>({
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>({
     lat: 8.59002112678708,
     lng: 123.34123498443732,
   });
@@ -72,7 +72,7 @@ export default function InternDashboardPage() {
     await insertAttendance.run({
       userId: user.id,
       type: currentStep.nextType,
-      location: [coordsRef.current.lat, coordsRef.current.lng],
+      location: [coords.lat, coords.lng],
       image: capture() ?? "",
       attribute: "",
       evaluated: false,
@@ -102,11 +102,10 @@ export default function InternDashboardPage() {
             </div>
             <div>
               <p className="text-[9px] font-black tracking-widest text-slate-400 uppercase">
-                Signal Lock
+                Map Location
               </p>
               <p className="text-[10px] font-bold text-slate-700">
-                {coordsRef.current.lat.toFixed(4)},{" "}
-                {coordsRef.current.lng.toFixed(4)}
+                {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
               </p>
             </div>
           </div>
@@ -121,16 +120,12 @@ export default function InternDashboardPage() {
         <div className="relative h-60 w-full p-2">
           <div className="h-full w-full overflow-hidden rounded-[1.8rem] border border-slate-100 shadow-inner">
             <GeoViewer
-              showControls={false}
               onCoordinateChange={(c: { lat: number; lng: number }) => {
-                coordsRef.current = c;
+                setCoords(c);
               }}
               geoOptions={{
                 mode: "track",
-                externalCoords: {
-                  lat: coordsRef.current.lat,
-                  lng: coordsRef.current.lng,
-                },
+                externalCoords: isMapVisible ? undefined : coords,
               }}
             />
           </div>
