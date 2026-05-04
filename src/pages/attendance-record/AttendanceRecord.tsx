@@ -17,6 +17,8 @@ import {
   Timer,
   ArrowRight,
 } from "lucide-react";
+import AccomplishmentReportDialog from "@/components/reports/AccomplishmentReportDialog";
+import DTRReportDialog from "@/components/reports/DTRReportDialog";
 
 const LOG_TYPE_THEME: Record<
   string,
@@ -89,9 +91,22 @@ const AttendanceRecord = () => {
             Historical Session Records
           </p>
         </div>
-        <div className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-2 text-xs font-bold text-slate-500 shadow-sm sm:flex">
-          <History size={14} className="text-emerald-500" />
-          {attendance.length} Total Sessions
+
+        <div className="flex items-center gap-4">
+          {/* Only show if there's data to report[cite: 1] */}
+          {attendance.length > 0 && (
+            <DTRReportDialog groupedAttendance={sortedGrouped} />
+          )}
+
+          {/* Only show if there's data to report[cite: 1] */}
+          {attendance.length > 0 && (
+            <AccomplishmentReportDialog groupedAttendance={sortedGrouped} />
+          )}
+
+          <div className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-2 text-xs font-bold text-slate-500 shadow-sm sm:flex">
+            <History size={14} className="text-emerald-500" />
+            {attendance.length} Total Sessions
+          </div>
         </div>
       </div>
 

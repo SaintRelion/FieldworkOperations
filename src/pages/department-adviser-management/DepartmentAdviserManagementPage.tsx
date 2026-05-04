@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, Search, UserCheck, UserX, Landmark } from "lucide-react";
+import {
+  Trash2,
+  Search,
+  UserCheck,
+  UserX,
+  Landmark,
+  Filter,
+} from "lucide-react";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
@@ -24,14 +31,19 @@ export default function DepartmentAdviserManagementPage() {
     }).data ?? [];
 
   const [search, setSearch] = useState("");
+  const [filterDept, setFilterDept] = useState("ALL");
 
   const filtered = departmentAdvisers.filter((s) => {
     const term = search.toLowerCase();
-    return (
+    const matchesSearch =
       s.firstName.toLowerCase().includes(term) ||
       s.lastName.toLowerCase().includes(term) ||
-      s.email.toLowerCase().includes(term)
-    );
+      s.email.toLowerCase().includes(term);
+
+    // NEW: Check if it matches the selected department (or if ALL is selected)
+    const matchesDept = filterDept === "ALL" || s.department === filterDept;
+
+    return matchesSearch && matchesDept;
   });
 
   const toggleConfirmation = async (id: string) => {
@@ -106,18 +118,45 @@ export default function DepartmentAdviserManagementPage() {
         )}
       </div>
 
-      {/* SEARCH: STRAIGHTFORWARD */}
-      <div className="relative w-full md:w-1/2">
-        <Search
-          className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
-          size={16}
-        />
-        <Input
-          placeholder="Filter by name or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="rounded-xl border-slate-200 bg-white pl-10 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10"
-        />
+      {/* SEARCH & FILTER: STRAIGHTFORWARD */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:w-1/2 md:w-1/3">
+          <Search
+            className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+            size={16}
+          />
+          <Input
+            placeholder="Filter by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="rounded-xl border-slate-200 bg-white pl-10 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10"
+          />
+        </div>
+
+        {/* NEW: Native Select Dropdown for Filtering */}
+        <div className="relative">
+          <Filter
+            className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+            size={14}
+          />
+          <select
+            value={filterDept}
+            onChange={(e) => setFilterDept(e.target.value)}
+            className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white pr-10 pl-9 text-sm font-bold text-slate-600 shadow-sm transition-all outline-none hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 sm:w-auto"
+          >
+            <option value="ALL">All Departments</option>
+            {Object.keys(Department).map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+            <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* TABLE: CLEAN SLATE DESIGN */}
@@ -126,6 +165,7 @@ export default function DepartmentAdviserManagementPage() {
           <thead className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-black tracking-widest text-slate-400 uppercase">
             <tr>
               <th className="px-6 py-4">Identity</th>
+              <th className="px-6 py-4">Username</th>
               <th className="px-6 py-4">Department</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
@@ -156,10 +196,16 @@ export default function DepartmentAdviserManagementPage() {
                     </div>
                   </div>
                 </td>
+
                 <td className="px-6 py-4">
-                  {/* DEPARTMENT EDIT TRIGGER */}
+                  <span className="rounded-md bg-slate-100 px-2 py-1 font-mono text-xs font-bold text-slate-500">
+                    @{da.username}
+                  </span>
+                </td>
+
+                <td className="px-6 py-4">
                   <button
-                    onClick={() => handleEditDepartment(da)} // Opens a small popover or dialog
+                    onClick={() => handleEditDepartment(da)}
                     className="flex items-center gap-2 rounded-md border border-slate-100 bg-white px-2 py-1 text-[10px] font-black text-slate-500 uppercase shadow-sm transition-all hover:border-emerald-200 hover:text-emerald-600"
                   >
                     <Landmark size={12} className="text-slate-300" />

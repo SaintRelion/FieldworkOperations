@@ -11,7 +11,7 @@ const LoginPage = () => {
 
   const handleLogin = async (data: Record<string, string>) => {
     await auth.login({
-      username: data.email,
+      username: data.username,
       password: data.password,
     });
   };
@@ -37,13 +37,13 @@ const LoginPage = () => {
           <RenderForm wrapperClassName="space-y-5">
             <div className="space-y-1">
               <label className="ml-1 text-[11px] font-black tracking-wider text-emerald-700/70 uppercase">
-                Email Address
+                Username
               </label>
               <RenderFormField
                 field={{
-                  type: "email",
-                  name: "email",
-                  placeholder: "Enter email",
+                  type: "text",
+                  name: "username",
+                  placeholder: "Enter username",
                 }}
                 inputClassName="w-full rounded-xl border border-emerald-50 bg-emerald-50/30 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
               />

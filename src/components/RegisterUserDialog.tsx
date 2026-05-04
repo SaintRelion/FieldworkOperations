@@ -96,7 +96,8 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="rounded-3xl border-none shadow-2xl sm:max-w-xl">
+      {/* CHANGE: Increased max-width from sm:max-w-xl to sm:max-w-4xl or 5xl */}
+      <DialogContent className="rounded-3xl border-none shadow-2xl sm:max-w-4xl lg:max-w-5xl">
         <DialogHeader className="border-b border-slate-100 pb-4">
           <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">
             Register{" "}
@@ -113,121 +114,146 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
           </div>
         )}
 
-        <RenderForm wrapperClassName="space-y-6 pt-4">
-          {/* SECTION 1: CORE ACCOUNT INFO */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-emerald-600">
-              <UserCircle size={18} />
-              <h2 className="text-xs font-black tracking-widest uppercase">
-                Account Credentials
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className={labelClass}>First Name</label>
-                <RenderFormField
-                  field={{
-                    type: "text",
-                    name: "firstName",
-                    placeholder: "First name",
-                  }}
-                  inputClassName={inputClass}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className={labelClass}>Last Name</label>
-                <RenderFormField
-                  field={{
-                    type: "text",
-                    name: "lastName",
-                    placeholder: "Last name",
-                  }}
-                  inputClassName={inputClass}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className={labelClass}>Email Address</label>
-                <RenderFormField
-                  field={{
-                    type: "email",
-                    name: "email",
-                    placeholder: "email@university.edu",
-                  }}
-                  inputClassName={inputClass}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className={labelClass}>Password</label>
-                <RenderFormField
-                  field={{
-                    type: "password",
-                    name: "password",
-                    placeholder: "••••••••",
-                  }}
-                  inputClassName={inputClass}
-                />
-              </div>
-              <div className="col-span-2 space-y-1">
-                <label className={labelClass}>Department Assignment</label>
-                <RenderFormField
-                  field={{
-                    type: "select",
-                    name: "department",
-                    options: Department,
-                  }}
-                  inputClassName={inputClass}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION 2: OJT SPECIFIC FIELDS (Conditional Toggle) */}
-          {role === "intern" && (
-            <div className="mt-4 space-y-4 border-t border-slate-50 pt-2">
-              <div className="flex items-center gap-2 text-emerald-600">
-                <Briefcase size={18} />
-                <h2 className="text-xs font-black tracking-widest uppercase">
-                  Internship Monitoring
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className={labelClass}>Required Hours</label>
-                  <RenderFormField
-                    field={{
-                      type: "number",
-                      name: "requiredHours",
-                      placeholder: "e.g. 480",
-                    }}
-                    inputClassName={inputClass}
-                  />
+        <RenderForm wrapperClassName="pt-6">
+          <div className="flex flex-col items-start gap-10 lg:flex-row">
+            {/* LEFT SIDE: Identity & Credentials */}
+            <div className="w-full flex-1 space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2 text-emerald-600">
+                  <UserCircle size={18} />
+                  <h2 className="text-xs font-black tracking-widest uppercase">
+                    Account Credentials
+                  </h2>
                 </div>
-                <div className="space-y-1">
-                  <label className={labelClass}>Training Company</label>
-                  <RenderFormField
-                    field={{
-                      type: "text",
-                      name: "trainingCompany",
-                      placeholder: "Company Name",
-                    }}
-                    inputClassName={inputClass}
-                  />
+
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className={labelClass}>First Name</label>
+                    <RenderFormField
+                      field={{
+                        type: "text",
+                        name: "firstName",
+                        placeholder: "First name",
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className={labelClass}>Last Name</label>
+                    <RenderFormField
+                      field={{
+                        type: "text",
+                        name: "lastName",
+                        placeholder: "Last name",
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
+
+                  <div className="space-y-1 md:col-span-2">
+                    <label className={labelClass}>Username</label>
+                    <RenderFormField
+                      field={{
+                        type: "text",
+                        name: "username",
+                        placeholder: "Choose a unique username",
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
+
+                  <div className="space-y-1 md:col-span-2">
+                    <label className={labelClass}>Email Address</label>
+                    <RenderFormField
+                      field={{
+                        type: "email",
+                        name: "email",
+                        placeholder: "email@university.edu",
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
+
+                  <div className="space-y-1 md:col-span-2">
+                    <label className={labelClass}>Password</label>
+                    <RenderFormField
+                      field={{
+                        type: "password",
+                        name: "password",
+                        placeholder: "••••••••",
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
+
+                  <div className="space-y-1 md:col-span-2">
+                    <label className={labelClass}>Department Assignment</label>
+                    <RenderFormField
+                      field={{
+                        type: "select",
+                        name: "department",
+                        options: Department,
+                      }}
+                      inputClassName={`${inputClass} w-full`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="pt-4">
-            <RenderFormButton
-              buttonLabel={
-                auth.isLocked ? "Creating Account..." : `Confirm Registration`
-              }
-              isDisabled={auth.isLocked}
-              buttonClassName="w-full rounded-xl bg-slate-900 py-4 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg shadow-slate-200 active:scale-[0.98]"
-              onSubmit={handleRegister}
-            />
+            {/* RIGHT SIDE: Contextual Info & Action */}
+            <div className="w-full space-y-6 lg:w-80 xl:w-[400px]">
+              {role === "intern" && (
+                <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-6 shadow-sm">
+                  <div className="flex items-center gap-2 text-emerald-600">
+                    <Briefcase size={18} />
+                    <h2 className="text-xs font-black tracking-widest uppercase">
+                      Internship Details
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className={labelClass}>Required Hours</label>
+                      <RenderFormField
+                        field={{
+                          type: "number",
+                          name: "requiredHours",
+                          placeholder: "e.g. 480",
+                        }}
+                        inputClassName={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={labelClass}>Training Company</label>
+                      <RenderFormField
+                        field={{
+                          type: "text",
+                          name: "trainingCompany",
+                          placeholder: "Company Name",
+                        }}
+                        inputClassName={inputClass}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <RenderFormButton
+                  buttonLabel={
+                    auth.isLocked ? "Creating..." : `Confirm Registration`
+                  }
+                  isDisabled={auth.isLocked}
+                  buttonClassName="w-full rounded-xl bg-slate-900 py-4 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg active:scale-[0.98]"
+                  onSubmit={handleRegister}
+                />
+                <p className="px-4 text-center text-[10px] leading-relaxed tracking-tight text-slate-400 uppercase">
+                  By confirming, you agree to the system's data management
+                  policies.
+                </p>
+              </div>
+            </div>
           </div>
         </RenderForm>
       </DialogContent>
