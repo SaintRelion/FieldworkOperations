@@ -17,7 +17,7 @@ import {
   Timer,
   ArrowRight,
 } from "lucide-react";
-import AccomplishmentReportDialog from "@/components/reports/AccomplishmentReportDialog";
+import AttendanceReportDialog from "@/components/reports/AttendanceReportDialog";
 import DTRReportDialog from "@/components/reports/DTRReportDialog";
 
 const LOG_TYPE_THEME: Record<
@@ -100,7 +100,7 @@ const AttendanceRecord = () => {
 
           {/* Only show if there's data to report[cite: 1] */}
           {attendance.length > 0 && (
-            <AccomplishmentReportDialog groupedAttendance={sortedGrouped} />
+            <AttendanceReportDialog groupedAttendance={sortedGrouped} />
           )}
 
           <div className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-2 text-xs font-bold text-slate-500 shadow-sm sm:flex">

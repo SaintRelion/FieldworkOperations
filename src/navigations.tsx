@@ -20,6 +20,7 @@ import BaseLayout from "./layout/BaseLayout";
 import AdminLoginPage from "./pages/authentication/AdminLoginPage";
 import DepartmentAttendanceEvaluation from "./pages/attendance-evaluation/DepartmentAttendanceEvaluation";
 import AccountPage from "./pages/account/AccountPage";
+import OJTAccomplishments from "./pages/accomplishment/OJTAccomplishments";
 
 roleLayoutMap[""] = {
   redirect: "/",
@@ -128,6 +129,13 @@ registerGroupAppRoutes({
       path: "attendancerecord",
       element: <AttendanceRecord />,
       label: "Attendance Record",
+      allowedRoles: ["intern"],
+    },
+
+    {
+      path: "accomplishment",
+      element: <OJTAccomplishments />,
+      label: "Accomplishments",
       allowedRoles: ["intern"],
     },
     {

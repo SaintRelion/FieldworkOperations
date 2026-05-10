@@ -15,13 +15,13 @@ import {
 import type { Attendance } from "@/models/Attendance";
 import { formatReadableDateTime, toDate } from "@saintrelion/time-functions";
 
-interface AccomplishmentReportDialogProps {
+interface AttendanceReportDialogProps {
   groupedAttendance: [string, Attendance[]][];
 }
 
 const EXPECTED_LOGS = ["time-in", "break-out", "break-in", "time-out"];
 
-const AccomplishmentReportDialog: React.FC<AccomplishmentReportDialogProps> = ({
+const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
   groupedAttendance,
 }) => {
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
@@ -405,4 +405,4 @@ const AccomplishmentReportDialog: React.FC<AccomplishmentReportDialogProps> = ({
   );
 };
 
-export default AccomplishmentReportDialog;
+export default AttendanceReportDialog;

@@ -12,6 +12,7 @@ import "@/lib/firebase-client";
 
 import "@/sr-config";
 import "@/repositories/AttendanceRepo";
+import "@/repositories/AccomplishmentRepo";
 import "@/repositories/InternInfoRepo";
 import "@/repositories/NotificationRepo";
 import "@/repositories/OjtYearlyRangeRepo";
