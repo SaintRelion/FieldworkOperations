@@ -6,13 +6,15 @@ WORKDIR /app
 # pnpm is provided through Node's Corepack.
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
 # @saintrelion/* packages are hosted on GitHub Packages.
 # The token is mounted only for this install step and is not copied into the image.
 RUN --mount=type=secret,id=github_token \
-    GITHUB_TOKEN="$(cat /run/secrets/github_token)" \
-    pnpm install --frozen-lockfile
+    TOKEN="$(cat /run/secrets/github_token)" && \
+    pnpm config set --global "//npm.pkg.github.com/:_authToken" "$TOKEN" && \
+    pnpm install --frozen-lockfile && \
+    pnpm config delete --global "//npm.pkg.github.com/:_authToken"
 
 COPY . .
 
