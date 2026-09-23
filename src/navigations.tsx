@@ -21,6 +21,7 @@ import AdminLoginPage from "./pages/authentication/AdminLoginPage";
 import DepartmentAttendanceEvaluation from "./pages/attendance-evaluation/DepartmentAttendanceEvaluation";
 import AccountPage from "./pages/account/AccountPage";
 import OJTAccomplishments from "./pages/accomplishment/OJTAccomplishments";
+import FirstAdminSetup from "./pages/FirstAdminSetup";
 
 roleLayoutMap[""] = {
   redirect: "/",
@@ -34,6 +35,10 @@ registerGroupAppRoutes({
     { path: "login", auth: true, element: <LoginPage /> },
     // { path: "register", auth: true, element: <RegisterPage /> },
     { path: "admin/login", public: true, element: <AdminLoginPage /> },
+    {
+  path: "/setup-admin",
+  element: <FirstAdminSetup />,
+}
   ],
 });
 
