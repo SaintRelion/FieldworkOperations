@@ -36,9 +36,10 @@ registerGroupAppRoutes({
     // { path: "register", auth: true, element: <RegisterPage /> },
     { path: "admin/login", public: true, element: <AdminLoginPage /> },
     {
-  path: "/setup-admin",
-  element: <FirstAdminSetup />,
-}
+      path: "/setup-admin",
+      auth: true,
+      element: <FirstAdminSetup />,
+    },
   ],
 });
 

@@ -10,8 +10,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
 # @saintrelion/* packages are hosted on GitHub Packages.
 # The token is mounted only for this install step and is not copied into the image.
-RUN --mount=type=secret,id=github_token \
-    TOKEN="$(cat /run/secrets/github_token)" && \
+RUN --mount=type=secret,id=sr_react_github_token \
+    TOKEN="$(cat /run/secrets/sr_react_github_token)" && \
     pnpm config set --global "//npm.pkg.github.com/:_authToken" "$TOKEN" && \
     pnpm install --frozen-lockfile && \
     pnpm config delete --global "//npm.pkg.github.com/:_authToken"

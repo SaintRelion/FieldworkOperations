@@ -26,7 +26,6 @@ export default function FirstAdminSetup() {
     const username = String(form.get("username") ?? "").trim();
     const email = String(form.get("email") ?? "").trim();
     const password = String(form.get("password") ?? "");
-    const department = String(form.get("department") ?? "").trim();
 
     if (!firstName || !lastName || !username || !email || !password) {
       setMessage("Fill in all required fields.");
@@ -47,7 +46,6 @@ export default function FirstAdminSetup() {
           lastName,
           username,
           email,
-          ...(department ? { department } : {}),
           isEnabled: true,
           roles: ["admin"],
           role: "admin",
@@ -123,6 +121,13 @@ export default function FirstAdminSetup() {
               ? "Creating administrator..."
               : "Create First Administrator"}
           </button>
+
+          <a
+            href="/admin/login"
+            className="block w-full text-center text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900"
+          >
+            Back to Admin Login
+          </a>
         </form>
       </div>
     </main>
