@@ -23,7 +23,6 @@ import {
   UserCircle,
   Shield,
   Edit3,
-  X,
   Mail,
   Landmark,
   Briefcase,
@@ -31,7 +30,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-// --- PASSWORD UTILITIES (Preserved for Library Compatibility) ---
 async function hashPassword(password: string, salt?: string) {
   const enc = new TextEncoder();
   const actualSalt =
@@ -53,29 +51,27 @@ async function verifyPassword(password: string, hash: string, salt: string) {
   return result.hash === hash;
 }
 
-// --- UI COMPONENTS ---
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none";
+  "w-full border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-[#1677ff] focus:outline-none";
 const labelClass =
-  "text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 block ml-1";
+  "mb-1 block text-xs font-semibold text-slate-600";
 
 interface DisplayFieldProps {
   label: string;
   value: string;
-  // Use LucideIcon type for strict Lucide support
   icon: LucideIcon;
 }
 
 function DisplayField({ label, value, icon: Icon }: DisplayFieldProps) {
   return (
-    <div className="group flex flex-col rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-colors hover:bg-slate-100">
+    <div className="border-b border-slate-200 py-4">
       <div className="mb-1 flex items-center gap-2">
-        <Icon size={12} className="text-slate-300" />
-        <label className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+        <Icon size={14} className="text-slate-400" />
+        <label className="text-xs font-medium text-slate-500">
           {label}
         </label>
       </div>
-      <div className="text-sm font-bold text-slate-700">{value || "—"}</div>
+      <div className="text-sm font-semibold text-slate-800">{value || "—"}</div>
     </div>
   );
 }
@@ -147,40 +143,35 @@ export default function AccountPage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 pb-20">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col justify-between border-b border-slate-200 px-2 pb-8 md:flex-row md:items-end">
+    <div className="mx-auto max-w-5xl space-y-8 pb-16">
+      <div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-slate-800">
-            Account <span className="text-emerald-600">Terminal</span>
-          </h1>
-          <p className="mt-1 text-xs font-bold tracking-[0.3em] text-slate-400 uppercase">
-            Access Level: {user.roles?.[0]?.toUpperCase() || "USER"}
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Your account</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Profile & security</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Manage the details used across your fieldwork records.
           </p>
         </div>
 
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className={`mt-4 flex items-center gap-2 rounded-xl px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all md:mt-0 ${
+          className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
             isEditing
-              ? "bg-slate-100 text-slate-500"
-              : "bg-slate-900 text-white shadow-xl shadow-slate-200"
+              ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              : "bg-slate-900 text-white hover:bg-slate-700"
           }`}
         >
-          {isEditing ? <X size={14} /> : <Edit3 size={14} />}
+          {!isEditing && <Edit3 size={14} />}
           {isEditing ? "Cancel" : "Edit Profile"}
         </button>
       </div>
 
-      <div className="rounded-[2.5rem] border border-white bg-white p-10 shadow-xl shadow-slate-200/50">
-        <RenderForm wrapperClassName="space-y-10">
-          {/* PERSONAL IDENTITY */}
+      <div className="border border-slate-200 bg-white p-5 sm:p-8">
+        <RenderForm wrapperClassName="space-y-8">
           <div className="space-y-6">
-            <div className="flex items-center gap-3 text-emerald-600">
-              <UserCircle size={20} />
-              <h2 className="text-xs font-black tracking-[0.2em] uppercase">
-                Profile Credentials
-              </h2>
+            <div className="border-b border-slate-200 pb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Personal details</h2>
+              <p className="mt-1 text-sm text-slate-500">Your name, email and department.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -202,10 +193,7 @@ export default function AccountPage() {
                       inputClassName={inputClass}
                     />
                   </div>
-                  {/* If Admin, we let this take the full width to keep it clean */}
-                  <div
-                    className={`${user.roles?.[0] === "admin" ? "col-span-2" : "col-span-2"} space-y-1`}
-                  >
+                  <div className="space-y-1 md:col-span-2">
                     <label className={labelClass}>Email Address</label>
                     <RenderFormField
                       field={{ type: "email", name: "email" }}
@@ -227,7 +215,6 @@ export default function AccountPage() {
                     icon={UserCircle}
                   />
 
-                  {/* Display Logic: If admin, span 2 columns to fill the row */}
                   <div
                     className={
                       user.roles?.[0] === "admin"
@@ -255,19 +242,16 @@ export default function AccountPage() {
               )}
             </div>
           </div>
-          {/* OJT DEPLOYMENT (Removed Program) */}
           {user.roles?.[0] === "intern" && intern && (
-            <div className="space-y-6 border-t border-slate-50 pt-10">
-              <div className="flex items-center gap-3 text-emerald-600">
-                <Briefcase size={20} />
-                <h2 className="text-xs font-black tracking-[0.2em] uppercase">
-                  Deployment Info
-                </h2>
+            <div className="space-y-5 border-t border-slate-200 pt-7">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Placement</h2>
+                <p className="mt-1 text-sm text-slate-500">Your assigned training site and required hours.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {isEditing ? (
-                  <div className="col-span-2 space-y-1">
+                  <div className="space-y-1 md:col-span-2">
                     <label className={labelClass}>Training Company</label>
                     <RenderFormField
                       field={{ type: "text", name: "trainingCompany" }}
@@ -294,11 +278,11 @@ export default function AccountPage() {
           )}
 
           {isEditing && (
-            <div className="pt-6">
+            <div className="flex justify-end border-t border-slate-200 pt-6">
               <RenderFormButton
                 isDisabled={updateUser.isLocked}
-                buttonLabel="Sync Profile Updates"
-                buttonClassName="w-full rounded-2xl bg-slate-900 py-4 font-bold text-white shadow-xl shadow-slate-200 transition-all hover:bg-emerald-600 active:scale-95"
+                buttonLabel="Save profile"
+                buttonClassName="bg-[#1677ff] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#0864db]"
                 onSubmit={handleUpdate}
               />
             </div>
@@ -306,24 +290,23 @@ export default function AccountPage() {
         </RenderForm>
       </div>
 
-      {/* FOOTER ACTIONS */}
-      <div className="flex flex-col items-center gap-6 pt-8">
+      <div className="border border-slate-200 bg-white p-5 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Password</h2>
+            <p className="mt-1 text-sm text-slate-500">Update the password for this account.</p>
+          </div>
         <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
           <DialogTrigger asChild>
-            <button className="group flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 uppercase transition-all hover:text-emerald-600">
-              <KeyRound
-                size={14}
-                className="transition-transform group-hover:rotate-12"
-              />
-              Change Security Credentials
+            <button className="inline-flex items-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              <KeyRound size={16} />
+              Change password
             </button>
           </DialogTrigger>
 
-          <DialogContent className="rounded-[2.5rem] border-none shadow-2xl sm:max-w-md">
+          <DialogContent className="border border-slate-200 bg-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">
-                Update <span className="text-emerald-600">Security</span>
-              </DialogTitle>
+              <DialogTitle className="text-xl font-semibold text-slate-900">Change password</DialogTitle>
             </DialogHeader>
 
             <RenderForm wrapperClassName="space-y-6 pt-4">
@@ -344,12 +327,13 @@ export default function AccountPage() {
 
               <RenderFormButton
                 buttonLabel="Update Password"
-                buttonClassName="w-full rounded-xl bg-slate-900 py-4 text-sm font-bold text-white shadow-lg transition-all hover:bg-emerald-600"
+                buttonClassName="w-full bg-[#1677ff] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0864db]"
                 onSubmit={handleChangePassword}
               />
             </RenderForm>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
     </div>
   );

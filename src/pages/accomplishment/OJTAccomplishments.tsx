@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import {
   Plus,
-  Trophy,
   Camera,
   Upload,
   X,
@@ -9,7 +8,6 @@ import {
   Loader2,
   CheckCircle2,
   CalendarDays,
-  Sparkles,
 } from "lucide-react";
 
 import { useCurrentUser } from "@saintrelion/auth-lib";
@@ -69,21 +67,12 @@ export default function OJTAccomplishments() {
   };
 
   return (
-    <div className="space-y-12 pb-32">
-      {/* ── HEADER ── */}
-      <div className="flex flex-col justify-between gap-6 border-b border-slate-200 px-2 pb-10 md:flex-row md:items-center">
-        <div className="flex items-center gap-5">
-          <div className="flex h-16 w-16 items-center justify-center rounded-[1.8rem] bg-slate-900 text-white shadow-2xl shadow-slate-200">
-            <Trophy size={32} strokeWidth={1.5} />
-          </div>
-          <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-800 uppercase">
-              OJT <span className="text-emerald-600">Accomplishments</span>
-            </h1>
-            <p className="mt-1 text-[10px] font-black tracking-[0.4em] text-slate-400 uppercase">
-              Daily Achievement Log
-            </p>
-          </div>
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col justify-between gap-5 border-b border-[#152238]/15 pb-7 md:flex-row md:items-end">
+        <div>
+          <p className="mb-2 text-[11px] font-bold tracking-[0.18em] text-[#1677ff] uppercase">Intern / work log</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.05em] text-[#152238] sm:text-4xl">Accomplishments</h1>
+          <p className="mt-2 text-sm text-slate-600">Keep a dated record of the work you completed during training.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -96,26 +85,24 @@ export default function OJTAccomplishments() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-3 rounded-2xl bg-emerald-600 px-6 py-3 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95"
+            className="flex min-h-11 items-center gap-2 bg-[#1677ff] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0864db]"
           >
             <Plus size={16} />
-            New Entry
+            Add entry
           </button>
         </div>
       </div>
 
-      {/* ── CONTENT ── */}
       {sortedGrouped.length === 0 ? (
         <EmptyState onAdd={() => setShowModal(true)} />
       ) : (
-        <div className="space-y-8">
-          {sortedGrouped.map(([date, items], i) => (
-            <DaySection key={date} date={date} items={items} index={i} />
+        <div className="space-y-6">
+          {sortedGrouped.map(([date, items]) => (
+            <DaySection key={date} date={date} items={items} />
           ))}
         </div>
       )}
 
-      {/* ── ADD MODAL ── */}
       {showModal && (
         <AddAccomplishmentModal
           userId={user.id}
@@ -132,64 +119,51 @@ export default function OJTAccomplishments() {
 function DaySection({
   date,
   items,
-  index,
 }: {
   date: string;
   items: Accomplishment[];
-  index: number;
 }) {
   const today = getCurrentDateTimeString().slice(0, 10);
   const isToday = date === today;
-  console.log(index);
 
   return (
-    <div key={date}>
-      {/* Date header */}
-      <div
-        className={`rounded-[2.5rem] border p-8 transition-all ${
-          isToday
-            ? "border-emerald-100 bg-white shadow-2xl shadow-emerald-900/5"
-            : "border-slate-100 bg-slate-50/50"
-        }`}
-      >
-        <div className="mb-8 flex items-center justify-between">
+    <section className="border border-[#152238]/12 bg-white">
+        <div className="flex items-center justify-between border-b border-[#152238]/10 px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <CalendarDays size={16} className="text-slate-400" />
-            <span className="text-[11px] font-black tracking-widest text-slate-800 uppercase">
+            <CalendarDays size={16} className="text-[#1677ff]" />
+            <span className="text-sm font-semibold text-[#152238]">
               {formatReadableDate(date)}
             </span>
             {isToday && (
-              <span className="animate-pulse rounded-full bg-emerald-500 px-3 py-1 text-[9px] font-black text-white uppercase">
-                Live Session
+              <span className="bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700 uppercase">
+                Today
               </span>
             )}
           </div>
-          <span className="text-[10px] font-black text-slate-400">
+          <span className="text-xs text-slate-500">
             {items.length} {items.length === 1 ? "entry" : "entries"}
           </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="divide-y divide-[#152238]/10">
           {items.map((item) => (
             <AccomplishmentCard key={item.id} item={item} />
           ))}
         </div>
-      </div>
-    </div>
+    </section>
   );
 }
 
 // ─── ACCOMPLISHMENT CARD ───────────────────────────────────────────────────────
 function AccomplishmentCard({ item }: { item: Accomplishment }) {
   return (
-    <div className="group flex cursor-default items-start gap-5 rounded-[2rem] border border-slate-100 bg-white p-4 transition-all hover:border-emerald-200 hover:shadow-lg">
-      {/* Image */}
-      <div className="h-16 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+    <div className="flex items-start gap-4 p-5 sm:px-6">
+      <div className="h-16 w-20 shrink-0 overflow-hidden bg-slate-100">
         {item.image ? (
           <img
             src={item.image}
             alt="accomplishment"
-            className="h-full w-full object-cover grayscale transition-all group-hover:grayscale-0"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-slate-50 text-slate-300">
@@ -198,14 +172,13 @@ function AccomplishmentCard({ item }: { item: Accomplishment }) {
         )}
       </div>
 
-      {/* Content */}
       <div className="flex flex-1 flex-col justify-between py-1">
         <p className="text-sm leading-relaxed text-slate-700">
           {item.description}
         </p>
         <div className="mt-2 flex items-center gap-2">
-          <CheckCircle2 size={13} className="text-emerald-500" />
-          <span className="text-[9px] font-black tracking-widest text-emerald-500 uppercase">
+          <CheckCircle2 size={13} className="text-[#1677ff]" />
+          <span className="text-[10px] font-semibold tracking-[0.12em] text-[#1677ff] uppercase">
             Logged
           </span>
         </div>
@@ -217,20 +190,16 @@ function AccomplishmentCard({ item }: { item: Accomplishment }) {
 // ─── EMPTY STATE
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center p-12 text-center">
-      <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-slate-900 text-emerald-500 shadow-2xl shadow-slate-200">
-        <Sparkles size={40} />
-      </div>
-      <h2 className="text-3xl font-black tracking-tighter text-slate-800 uppercase">
-        Nothing Logged Yet
+    <div className="border border-dashed border-[#152238]/20 bg-white px-6 py-14 text-center">
+      <h2 className="text-xl font-semibold text-[#152238]">
+        No accomplishments yet
       </h2>
-      <p className="mt-3 max-w-sm text-sm leading-relaxed font-bold text-slate-400">
-        Start documenting what you accomplished today — every entry counts
-        toward your OJT record.
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-600">
+        Add your first entry to start a dated record of your training work.
       </p>
       <button
         onClick={onAdd}
-        className="mt-10 flex items-center gap-3 rounded-2xl bg-emerald-600 px-10 py-4 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95"
+        className="mt-6 inline-flex min-h-11 items-center gap-2 bg-[#1677ff] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0864db]"
       >
         <Plus size={16} /> Add First Entry
       </button>
@@ -326,15 +295,15 @@ function AddAccomplishmentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[#09111f]/70 p-4 sm:items-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-lg rounded-[2.5rem] bg-white p-8 shadow-2xl">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto border border-[#152238]/15 bg-white p-6 shadow-2xl sm:p-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-black tracking-tighter text-slate-800 uppercase">
-              New <span className="text-emerald-600">Entry</span>
+            <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#152238]">
+              New accomplishment
             </h2>
             <p className="mt-1 text-[10px] font-black tracking-[0.4em] text-slate-400 uppercase">
               What did you accomplish?
@@ -342,7 +311,7 @@ function AddAccomplishmentModal({
           </div>
           <button
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition-all hover:bg-slate-200"
+            className="flex h-10 w-10 items-center justify-center bg-slate-100 text-slate-500 transition-all hover:bg-slate-200"
           >
             <X size={16} />
           </button>
@@ -464,7 +433,7 @@ function AddAccomplishmentModal({
           <button
             onClick={handleSubmit}
             disabled={isLoading || !description.trim()}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="flex w-full items-center justify-center gap-2 bg-[#1677ff] py-4 text-sm font-semibold text-white transition-colors hover:bg-[#0864db] disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />

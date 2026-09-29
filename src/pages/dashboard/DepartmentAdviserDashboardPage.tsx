@@ -1,141 +1,73 @@
 import { useMemo } from "react";
-import { RenderDataCore } from "@saintrelion/ui";
+import { Link } from "react-router-dom";
+import { ArrowRight, Building2, CalendarDays, Users } from "lucide-react";
 import OJTAttendanceTable from "@/components/OJTAttendanceTable";
 import type { InternInfo } from "@/models/InternInfo";
 import type { User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
-import { Users, Building2, LayoutDashboard } from "lucide-react";
 import { Department } from "@/model_types/department";
-
-interface StatItem {
-  icon: React.ReactNode;
-  title: string;
-  value: number | string;
-  trend: string;
-}
 
 export function DepartmentAdviserDashboard() {
   const user = useCurrentUser<User>();
-
-  // 1. DATA SELECTORS
   const { useList: getUsers } = useResourceLocked<User>("user");
-  const { useList: getInternInfos } =
-    useResourceLocked<InternInfo>("interninfo");
-
-  const interns = getUsers({
-    filters: {
-      role: "intern",
-      department: user.department,
-    },
-  }).data;
+  const { useList: getInternInfos } = useResourceLocked<InternInfo>("interninfo");
+  const interns = getUsers({ filters: { role: "intern", department: user.department } }).data;
   const internInfos = getInternInfos().data;
 
-  // 2. DERIVED ANALYTICS
-  const stats: StatItem[] = useMemo(() => {
-    // Calculate unique training companies for this department
-    const departmentInternIds = new Set(interns.map((i) => i.id));
-    const activeCompanies = new Set(
+  const siteCount = useMemo(() => {
+    const ids = new Set(interns.map((intern) => intern.id));
+    return new Set(
       internInfos
-        .filter((info) => departmentInternIds.has(info.userId))
+        .filter((info) => ids.has(info.userId) && info.trainingCompany)
         .map((info) => info.trainingCompany),
-    );
-
-    return [
-      {
-        icon: <Users size={20} className="text-emerald-500" />,
-        title: "Total Interns",
-        value: interns.length,
-        trend: "Active Trainees",
-      },
-      {
-        icon: <Building2 size={20} className="text-blue-500" />,
-        title: "Partner Sites",
-        value: activeCompanies.size,
-        trend: "Training Locations",
-      },
-    ];
+    ).size;
   }, [interns, internInfos]);
 
   return (
-    <div className="space-y-10 pb-20">
-      {/* TERMINAL HEADER */}
-      <div className="flex flex-col justify-between gap-6 border-b border-slate-200 px-2 pb-8 md:flex-row md:items-center">
-        <div className="flex items-center gap-5">
-          {/* Terminal Icon Box */}
-          <div className="flex h-16 w-16 items-center justify-center rounded-[1.8rem] bg-slate-900 text-white shadow-2xl shadow-slate-200">
-            <LayoutDashboard size={32} strokeWidth={1.5} />
-          </div>
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col gap-6 border-b border-[#152238]/15 pb-7 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="mb-2 text-[11px] font-bold tracking-[0.18em] text-[#1677ff] uppercase">Adviser / overview</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.05em] text-[#152238] sm:text-4xl">Attendance at a glance.</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {Department[user.department as keyof typeof Department] ?? user.department} · Review records and keep training on track.
+          </p>
+        </div>
+        <Link to="/departmentadviser/attendance" className="inline-flex min-h-11 items-center justify-between gap-6 bg-[#1677ff] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0864db]">
+          Review attendance <ArrowRight size={17} aria-hidden="true" />
+        </Link>
+      </div>
 
+      <div className="grid gap-px border border-[#152238]/12 bg-[#152238]/12 sm:grid-cols-2">
+        <Link to="/departmentadviser/interns" className="group flex items-center justify-between bg-white p-5 transition-colors hover:bg-[#f7f9fc] sm:p-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-800 uppercase">
-              Adviser <span className="text-emerald-600">Terminal</span>
-            </h1>
-
-            {/* HIGHLIGHTED DEPARTMENT SUBTITLE */}
-            <div className="mt-2 flex items-center gap-2">
-              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              <p className="text-xs font-black tracking-[0.2em] text-slate-500 uppercase">
-                {Department[user.department as keyof typeof Department]}
-                <span className="ml-2 rounded-md bg-slate-100 px-2 py-0.5 text-[9px] text-slate-400">
-                  Control Center
-                </span>
-              </p>
-            </div>
+            <p className="text-[11px] font-bold tracking-[0.15em] text-slate-500 uppercase">Assigned interns</p>
+            <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-[#152238]">{interns.length}</p>
+            <p className="mt-1 text-xs text-slate-500">View intern directory</p>
           </div>
+          <Users size={27} className="text-[#a45b00]" aria-hidden="true" />
+        </Link>
+        <div className="flex items-center justify-between bg-white p-5 sm:p-6">
+          <div>
+            <p className="text-[11px] font-bold tracking-[0.15em] text-slate-500 uppercase">Training sites</p>
+            <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-[#152238]">{siteCount}</p>
+            <p className="mt-1 text-xs text-slate-500">Sites linked to your interns</p>
+          </div>
+          <Building2 size={27} className="text-[#6d45bd]" aria-hidden="true" />
         </div>
       </div>
 
-      {/* ANALYTICS GRID: 2 Columns */}
-      <RenderDataCore
-        data={stats.filter((s) => s.title !== "Department")} // Remove the old department stat
-        ui={{
-          content: {
-            wrapperClassName: "grid grid-cols-1 md:grid-cols-2 gap-6",
-          },
-        }}
-        renderItem={(item: StatItem) => (
-          <div className="group relative flex items-center gap-6 rounded-[3rem] border border-white bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-emerald-900/10">
-            {/* Larger Icon for 2-col layout */}
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] border border-slate-100 bg-slate-50 shadow-inner transition-colors group-hover:bg-emerald-50">
-              {item.icon}
-            </div>
-
-            <div>
-              <p className="mb-1 text-[11px] font-black tracking-[0.25em] text-slate-400 uppercase">
-                {item.title}
-              </p>
-              <div className="flex items-baseline gap-3">
-                <p className="text-4xl font-black tracking-tighter text-slate-800">
-                  {item.value}
-                </p>
-                <span className="text-[10px] font-black tracking-widest text-emerald-500 uppercase opacity-0 transition-opacity group-hover:opacity-100">
-                  {item.trend}
-                </span>
-              </div>
-            </div>
-
-            {/* Subtle Background Glow on Hover */}
-            <div className="absolute top-1/2 right-8 -translate-y-1/2 text-slate-50 opacity-0 transition-opacity group-hover:opacity-100">
-              {item.icon}
-            </div>
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-1 flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-[#1677ff] uppercase"><CalendarDays size={14} aria-hidden="true" /> Daily monitor</p>
+            <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#152238]">Attendance by date</h2>
+            <p className="mt-1 text-sm text-slate-600">Choose a day to see recorded activity for your interns.</p>
           </div>
-        )}
-      />
-
-      {/* MAIN DATA SECTION */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 px-4">
-          <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-          <h2 className="text-xs font-black tracking-[0.3em] text-slate-500 uppercase">
-            Live Attendance Monitor
-          </h2>
         </div>
-
-        <div className="overflow-hidden rounded-[3rem] border border-white bg-white p-2 shadow-2xl shadow-slate-200/40">
-          <OJTAttendanceTable />
-        </div>
-      </div>
+        <OJTAttendanceTable />
+      </section>
     </div>
   );
 }

@@ -3,7 +3,6 @@
 
 @import "leaflet/dist/leaflet.css";
 
-/* 3️⃣ Custom dark variant and theme token setup */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -44,27 +43,26 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* 4️⃣ Theme variables (light mode) */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --radius: 0.25rem;
+  --background: #f4f1ea;
+  --foreground: #152238;
+  --card: #ffffff;
+  --card-foreground: #152238;
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #1677ff;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #e7effb;
+  --accent-foreground: #0b5fc7;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #d7d5cf;
+  --input: #d7d5cf;
+  --ring: #1677ff;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -80,7 +78,6 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* 5️⃣ Dark mode variables */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -115,12 +112,155 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* 6️⃣ Global base layer styling */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    min-width: 320px;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-feature-settings: "ss01", "cv02", "cv03";
   }
+
+  button, a, input, select, textarea {
+    transition-duration: 180ms;
+  }
+}
+
+@layer components {
+  .app-shell main h1,
+  .app-shell main h2,
+  .app-shell main h3 {
+    letter-spacing: -0.035em;
+  }
+
+  .app-shell main > div > div[class*="rounded"] {
+    border-color: rgb(21 34 56 / 0.12);
+  }
+
+  .app-shell table {
+    font-size: 0.875rem;
+  }
+
+  .app-shell thead {
+    background: #09111f;
+    color: white;
+  }
+
+  .app-shell tbody tr {
+    border-color: rgb(21 34 56 / 0.08);
+  }
+
+  .app-shell tbody tr:hover {
+    background: rgb(22 119 255 / 0.045);
+  }
+}
+
+.app-shell [class~="bg-emerald-600"] {
+  background-color: #1677ff !important;
+}
+
+.app-shell [class~="bg-emerald-100"],
+.app-shell [class~="bg-green-200"] {
+  background-color: #dbeafe !important;
+}
+
+.app-shell [class~="text-emerald-500"],
+.app-shell [class~="text-emerald-600"],
+.app-shell [class~="text-emerald-700"],
+.app-shell [class~="text-green-600"] {
+  color: #1677ff !important;
+}
+
+.app-shell [class~="hover:bg-emerald-600"]:hover,
+.app-shell [class~="hover:bg-emerald-700"]:hover {
+  background-color: #0864db !important;
+}
+
+.app-shell [data-slot="dialog-content"] {
+  border-radius: 0 !important;
+  background: #f8f6f0;
+}
+
+.app-shell [data-slot="dialog-overlay"] {
+  background: rgb(9 17 31 / 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.app-shell [data-slot="card"],
+.app-shell [data-slot="table-container"] {
+  border-radius: 0 !important;
+  border-color: rgb(21 34 56 / 0.12);
+  box-shadow: 0 14px 34px rgb(9 17 31 / 0.06);
+}
+
+.app-shell [data-slot="button"],
+.app-shell [data-slot="input"],
+.app-shell [data-slot="select-trigger"],
+.app-shell [data-slot="textarea"] {
+  border-radius: 0 !important;
+}
+
+.app-shell [data-slot="table-header"] {
+  background: #09111f !important;
+  color: #fff !important;
+}
+
+.app-shell table > thead {
+  background: #09111f !important;
+  color: #b9c5d6 !important;
+}
+
+.app-shell table > thead th {
+  color: #b9c5d6 !important;
+  font-size: 0.625rem;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.app-shell table > tbody > tr {
+  background: #ffffff !important;
+}
+
+.app-shell table > tbody > tr:nth-child(even) {
+  background: #fbfaf7 !important;
+}
+
+.app-shell table > tbody > tr:hover {
+  background: #f4f7fb !important;
+}
+
+.app-shell [data-slot="table-head"] {
+  height: 3rem;
+  padding-inline: 1rem;
+  color: #b9c5d6 !important;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.app-shell [data-slot="table-cell"] {
+  padding: 1rem;
+}
+
+.app-shell form input:not([type="checkbox"]):not([type="radio"]),
+.app-shell form select,
+.app-shell form textarea {
+  border-radius: 0 !important;
+}
+
+.app-shell form input:not([type="checkbox"]):not([type="radio"]):focus,
+.app-shell form select:focus,
+.app-shell form textarea:focus {
+  border-color: #1677ff !important;
+  --tw-ring-color: rgb(22 119 255 / 0.15) !important;
+}
+
+.app-shell main [class*="rounded-2xl"],
+.app-shell main [class*="rounded-3xl"],
+.app-shell main [class*="rounded-["] {
+  border-radius: 0.25rem !important;
 }

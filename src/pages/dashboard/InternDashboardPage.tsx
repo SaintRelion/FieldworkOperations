@@ -1,23 +1,8 @@
 import { useMemo, useState } from "react";
-import {
-  Camera,
-  History,
-  CheckCircle2,
-  Play,
-  Coffee,
-  LogOut,
-  ArrowLeft,
-  UserCircle,
-  ChevronDown,
-  ChevronUp,
-  Navigation,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Camera, Check, MapPin } from "lucide-react";
 import type { Attendance, CreateAttendance } from "@/models/Attendance";
-import {
-  formatReadableDateTime,
-  getCurrentDateTimeString,
-  isSameDay,
-} from "@saintrelion/time-functions";
+import { formatReadableDateTime, getCurrentDateTimeString, isSameDay } from "@saintrelion/time-functions";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { GeoViewer } from "@/to-be-library/geo/geo-viewer";
@@ -25,238 +10,178 @@ import { LiveClock } from "@/to-be-library/live/live-clock";
 import { CameraCapture } from "@/to-be-library/live/camera-capture";
 import type { User } from "@/models/User";
 import { sortByCreatedAt } from "@/lib/utils";
+import { attendanceOutcome, sessionAttendance } from "@/lib/attendance";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import { toast } from "@saintrelion/notifications";
 
 type AttendanceType = "time-in" | "break-out" | "break-in" | "time-out";
 
-interface StepMeta {
-  label: string;
-  nextType: AttendanceType | null;
-  color: string;
-  icon: React.ReactNode;
-}
+const steps: { type: AttendanceType; label: string }[] = [
+  { type: "time-in", label: "Time in" },
+  { type: "break-out", label: "Break out" },
+  { type: "break-in", label: "Break in" },
+  { type: "time-out", label: "Time out" },
+];
 
 export default function InternDashboardPage() {
   const user = useCurrentUser<User>();
   const [selectedLog, setSelectedLog] = useState<Attendance | null>(null);
-  const [open, setOpen] = useState<boolean>(false);
-
-  const [isMapVisible, setIsMapVisible] = useState<boolean>(true);
-  const [coords, setCoords] = useState<{ lat: number; lng: number }>({
-    lat: 8.59002112678708,
-    lng: 123.34123498443732,
-  });
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coords, setCoords] = useState({ lat: 8.59002112678708, lng: 123.34123498443732 });
 
   const { useList: getAttendance, useInsert: insertAttendance } =
-    useResourceLocked<Attendance, CreateAttendance>("attendance", {
-      showToast: false,
-    });
-
+    useResourceLocked<Attendance, CreateAttendance>("attendance", { showToast: false });
   const attendanceQuery = getAttendance({ filters: { userId: user.id } });
+  useRefreshOnFocus(attendanceQuery.refetch);
   const attendance = sortByCreatedAt(attendanceQuery.data, "desc");
 
-  const currentStep = useMemo(() => {
+  const completedSteps = useMemo(() => {
     const today = getCurrentDateTimeString().slice(0, 10);
-    const todaysLogs = attendance.filter((log: Attendance) =>
-      isSameDay(today, log.createdAt),
-    );
-    if (todaysLogs.length === 0) return NEXT_STEP_LOGIC["none"];
-    return NEXT_STEP_LOGIC[todaysLogs[0].type] || NEXT_STEP_LOGIC["time-out"];
+    const todaysLogs = attendance.filter((log) => isSameDay(today, log.createdAt));
+    return steps.filter((step) => todaysLogs.some((log) => log.type === step.type)).length;
   }, [attendance]);
 
-  console.log(currentStep);
+  const nextStep = steps[completedSteps] ?? null;
 
   const logAttendance = async (capture: () => string | null) => {
-    if (!currentStep.nextType) return;
-    await insertAttendance.run({
-      userId: user.id,
-      type: currentStep.nextType,
-      location: [coords.lat, coords.lng],
-      image: capture() ?? "",
-      attribute: "",
-      evaluated: false,
-    });
+    if (!nextStep || isSubmitting) return;
+    const image = capture();
+    if (!image) {
+      toast.error("Camera is not ready yet. Please check camera access and try again.");
+      return;
+    }
 
-    toast.success("Attendance Recorded");
+    setIsSubmitting(true);
+    try {
+      await insertAttendance.run({
+        userId: user.id,
+        type: nextStep.type,
+        location: [coords.lat, coords.lng],
+        image,
+        attribute: "",
+        evaluated: false,
+      });
+      await attendanceQuery.refetch();
+      toast.info(`${nextStep.label} recorded`);
+    } catch {
+      toast.error("Attendance could not be recorded. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-12">
-      {selectedLog && (
-        <ViewAttendancePopup
-          record={selectedLog}
-          open={open}
-          onOpenChange={setOpen}
-        />
-      )}
+    <div className="space-y-8 pb-12">
+      {selectedLog && <ViewAttendancePopup record={sessionAttendance(attendance.find((log) => log.id === selectedLog.id) ?? selectedLog, attendance)} open={open} onOpenChange={setOpen} />}
 
-      {/* FLOATING MAP HUD - Cleaned up Overlays */}
-      <div
-        className={`fixed right-8 bottom-8 z-50 w-80 overflow-hidden rounded-[2.5rem] border border-white bg-white/90 shadow-2xl backdrop-blur-2xl transition-all duration-500 ease-in-out ${isMapVisible ? "h-80 translate-y-0" : "h-14 translate-y-2"}`}
-      >
-        <div className="flex w-full items-center justify-between bg-slate-900/5 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-200">
-              <Navigation size={14} fill="currentColor" />
-            </div>
+      <div className="flex flex-col gap-5 border-b border-[#152238]/15 pb-7 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[11px] font-bold tracking-[0.18em] text-[#1677ff] uppercase">Intern / today</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.05em] text-[#152238] sm:text-4xl">Your shift, {user.firstName}.</h1>
+          <p className="mt-2 text-sm text-slate-600">Record each step of your day with a photo and location.</p>
+        </div>
+        <div className="border-l-4 border-[#f4b740] bg-[#09111f] px-5 py-3 text-white">
+          <LiveClock />
+        </div>
+      </div>
+
+      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+        <section className="min-w-0 border border-[#152238]/12 bg-white">
+          <div className="flex items-center justify-between border-b border-[#152238]/10 px-5 py-4 sm:px-6">
             <div>
-              <p className="text-[9px] font-black tracking-widest text-slate-400 uppercase">
-                Map Location
-              </p>
-              <p className="text-[10px] font-bold text-slate-700">
-                {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
-              </p>
+              <p className="text-[10px] font-bold tracking-[0.18em] text-slate-500 uppercase">Attendance capture</p>
+              <h2 className="mt-1 text-lg font-semibold text-[#152238]">{nextStep ? `Next: ${nextStep.label}` : "Shift complete"}</h2>
             </div>
+            <span className="text-xs font-semibold text-slate-500">{completedSteps} / 4 steps</span>
           </div>
-          <button
-            onClick={() => setIsMapVisible(!isMapVisible)}
-            className="rounded-full bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:text-emerald-500"
-          >
-            {isMapVisible ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-          </button>
-        </div>
-
-        <div className="relative h-60 w-full p-2">
-          <div className="h-full w-full overflow-hidden rounded-[1.8rem] border border-slate-100 shadow-inner">
-            <GeoViewer
-              onCoordinateChange={(c: { lat: number; lng: number }) => {
-                setCoords(c);
-              }}
-              geoOptions={{
-                mode: "track",
-                externalCoords: isMapVisible ? undefined : coords,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* LEFT: MAIN TERMINAL */}
-      <div className="space-y-6 lg:col-span-7">
-        <div className="relative overflow-hidden rounded-[3rem] border border-white bg-white p-10 shadow-xl shadow-slate-200/50">
-          <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
-                <UserCircle size={32} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black tracking-[0.3em] text-slate-400 uppercase">
-                  Authenticated Session
-                </p>
-                <h1 className="text-3xl font-black tracking-tighter text-slate-800">
-                  {user.firstName}{" "}
-                  <span className="text-emerald-500">{user.lastName}</span>
-                </h1>
-              </div>
-            </div>
-            <div className="rounded-3xl bg-slate-900 px-6 py-4 text-white shadow-xl">
-              <LiveClock />
-            </div>
-          </div>
-
-          <CameraCapture>
-            {({ capture, isCapturing }) => (
-              <div className="space-y-8">
-                <div className="flex flex-col items-center gap-4">
+          <div className="p-4 sm:p-6">
+            <CameraCapture>
+              {({ capture, isCapturing, isReady, error }) => (
+                <div className="mt-5 w-full">
                   <button
-                    disabled={isCapturing || !currentStep.nextType}
+                    type="button"
+                    disabled={isCapturing || isSubmitting || !isReady || !nextStep}
                     onClick={() => logAttendance(capture)}
-                    className={`group flex w-full max-w-md items-center justify-between rounded-[2rem] p-2 transition-all active:scale-[0.96] disabled:opacity-30 ${currentStep.color} shadow-2xl shadow-slate-200`}
+                    className="flex min-h-14 w-full items-center justify-between bg-[#1677ff] px-5 text-left text-sm font-semibold text-white transition-colors hover:bg-[#0864db] disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
-                    <div className="pl- flex items-center gap-4 px-4 text-white">
-                      {currentStep.icon}
-                      <span className="text-xl font-black tracking-tight">
-                        {currentStep.label}
-                      </span>
-                    </div>
-                    <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/20 bg-white/20 backdrop-blur-md">
-                      <Camera className="text-white" size={28} />
-                    </div>
+                    <span>{isSubmitting ? "Recording..." : nextStep ? `Record ${nextStep.label}` : "All steps recorded"}</span>
+                    {nextStep ? <Camera size={19} aria-hidden="true" /> : <Check size={19} aria-hidden="true" />}
                   </button>
-                  {!currentStep.nextType && (
-                    <p className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-[10px] font-black tracking-[0.2em] text-emerald-600 uppercase">
-                      Deployment Complete for {new Date().toLocaleDateString()}
-                    </p>
-                  )}
+                  {error && nextStep && <p className="mt-3 text-sm text-red-700" role="alert">{error}</p>}
+                  {!error && !isReady && nextStep && <p className="mt-3 text-sm text-slate-500">Starting camera…</p>}
+                  {!nextStep && <p className="mt-3 text-sm text-slate-600">Your attendance is complete for today.</p>}
                 </div>
+              )}
+            </CameraCapture>
+          </div>
+        </section>
+
+        <div className="min-w-0 space-y-6">
+          <section className="border border-[#152238]/12 bg-white p-5 sm:p-6">
+            <h2 className="text-base font-semibold text-[#152238]">Today’s sequence</h2>
+            <ol className="mt-5 divide-y divide-[#152238]/10">
+              {steps.map((step, index) => (
+                <li key={step.type} className="flex items-center gap-4 py-3">
+                  <span className={`grid h-8 w-8 shrink-0 place-items-center text-xs font-bold ${index < completedSteps ? "bg-[#09111f] text-white" : index === completedSteps ? "bg-[#1677ff] text-white" : "bg-[#f4f1ea] text-slate-500"}`}>
+                    {index < completedSteps ? <Check size={15} aria-hidden="true" /> : String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className={`text-sm ${index === completedSteps ? "font-semibold text-[#152238]" : "text-slate-600"}`}>{step.label}</span>
+                  <span className="ml-auto text-[10px] font-semibold tracking-[0.12em] text-slate-400 uppercase">
+                    {index < completedSteps ? "Recorded" : index === completedSteps ? "Next" : "Pending"}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="overflow-hidden border border-[#152238]/12 bg-white">
+            <div className="flex items-center justify-between px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-base font-semibold text-[#152238]">Capture location</h2>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><MapPin size={13} aria-hidden="true" /> {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>
               </div>
-            )}
-          </CameraCapture>
+            </div>
+            <div className="h-56 border-t border-[#152238]/10">
+              <GeoViewer onCoordinateChange={setCoords} geoOptions={{ mode: "track" }} />
+            </div>
+          </section>
         </div>
       </div>
 
-      {/* RIGHT: LOGS */}
-      <div className="space-y-4 lg:col-span-5">
-        <h2 className="flex items-center gap-2 px-4 text-xs font-black tracking-[0.3em] text-slate-500 uppercase">
-          <History size={16} className="text-emerald-500" /> Session History
-        </h2>
-        <div className="custom-scrollbar max-h-[80vh] space-y-3 overflow-y-auto pr-2">
-          {attendance.map((log) => (
-            <div
-              key={log.id}
-              onClick={() => {
-                setSelectedLog(log);
-                setOpen(true);
-              }}
-              className="group flex cursor-pointer gap-4 rounded-[2.2rem] border border-white bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200/40"
-            >
-              <img
-                src={log.image}
-                alt="auth"
-                className="h-16 w-16 rounded-2xl border border-slate-100 object-cover shadow-sm"
-              />
-              <div className="min-w-0 flex-1">
-                <span
-                  className={`rounded-md px-2 py-0.5 text-[8px] font-black tracking-widest uppercase ${log.type.includes("time") ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                >
-                  {log.type.replace("-", " ")}
-                </span>
-                <p className="mt-1 text-sm font-black text-slate-800">
-                  {formatReadableDateTime(log.createdAt)}
-                </p>
-                <p className="mt-1 truncate text-[9px] font-bold text-slate-400">
-                  LOC: {log.location.join(", ")}
-                </p>
-              </div>
-            </div>
-          ))}
+      <section className="border-t border-[#152238]/15 pt-6">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-[#152238]">Recent records</h2>
+            <p className="mt-1 text-xs text-slate-500">Your latest attendance entries</p>
+          </div>
+          <Link to="/intern/attendancerecord" className="flex items-center gap-2 text-xs font-semibold text-[#0864db] hover:underline">View all <ArrowRight size={14} /></Link>
         </div>
-      </div>
+        {attendance.length === 0 ? (
+          <p className="border border-dashed border-[#152238]/20 bg-white px-5 py-8 text-sm text-slate-500">No attendance has been recorded yet.</p>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {attendance.slice(0, 4).map((log) => (
+              <button
+                type="button"
+                key={log.id}
+                onClick={() => { setSelectedLog(log); setOpen(true); void attendanceQuery.refetch(); }}
+                className="flex items-center gap-3 border border-[#152238]/10 bg-white p-3 text-left transition-colors hover:border-[#1677ff]/40 hover:bg-[#f7f9fc]"
+              >
+                <img src={log.image} alt="Attendance capture" className="h-12 w-12 shrink-0 object-cover" />
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-bold tracking-[0.12em] text-[#1677ff] uppercase">{log.type.replace("-", " ")}</span>
+                  <span className="mt-1 block truncate text-xs text-slate-600">{formatReadableDateTime(log.createdAt)}</span>
+                  <span className={`mt-2 inline-block px-2 py-1 text-xs font-semibold ${attendanceOutcome(sessionAttendance(log, attendance)).className}`}>
+                    {attendanceOutcome(sessionAttendance(log, attendance)).label}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-
-// Data Mapping for the Logic
-const NEXT_STEP_LOGIC: Record<string, StepMeta> = {
-  none: {
-    label: "Time In",
-    nextType: "time-in",
-    color: "bg-emerald-600",
-    icon: <Play size={20} />,
-  },
-  "time-in": {
-    label: "Break Out",
-    nextType: "break-out",
-    color: "bg-amber-500",
-    icon: <Coffee size={20} />,
-  },
-  "break-out": {
-    label: "Break In",
-    nextType: "break-in",
-    color: "bg-blue-500",
-    icon: <ArrowLeft size={20} />,
-  },
-  "break-in": {
-    label: "Time Out",
-    nextType: "time-out",
-    color: "bg-rose-600",
-    icon: <LogOut size={20} />,
-  },
-  "time-out": {
-    label: "Completed",
-    nextType: null,
-    color: "bg-slate-400",
-    icon: <CheckCircle2 size={20} />,
-  },
-};

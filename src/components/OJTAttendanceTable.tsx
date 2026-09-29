@@ -1,33 +1,21 @@
 import { useEffect, useState } from "react";
 import { Calendar } from "./ui/calendar";
 import { isBefore, isAfter, startOfDay, endOfDay } from "date-fns";
-
 import InternTable from "./tables/interntable";
 import type { OjtYearlyDateRange } from "@/models/OjtYearlyDateRange";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 
 const OJTAttendanceTable = () => {
-  // Default
   const currentYear = new Date().getFullYear();
   const currentSchoolYear = `${currentYear}-${currentYear + 1}`;
-  // End
-
-  const [selectedSchoolYear, setSelectedSchoolYear] =
-    useState(currentSchoolYear);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
-  );
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState(currentSchoolYear);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [focusedMonth, setFocusedMonth] = useState<Date>();
-
-  const { useList: getOjtYearRanges } =
-    useResourceLocked<OjtYearlyDateRange>("ojtyearlydaterange");
+  const { useList: getOjtYearRanges } = useResourceLocked<OjtYearlyDateRange>("ojtyearlydaterange");
   const ranges = getOjtYearRanges().data;
-
-  const selectedRange = ranges?.find((r) => r.yearRange === selectedSchoolYear);
-
-  const start =
-    selectedRange?.start ?? new Date(new Date().getFullYear(), 0, 1); // Jan 1 of current year
-  const end = selectedRange?.end ?? new Date(new Date().getFullYear(), 11, 31); // Dec 31 of current year
+  const selectedRange = ranges?.find((range) => range.yearRange === selectedSchoolYear);
+  const start = selectedRange?.start ?? new Date(currentYear, 0, 1);
+  const end = selectedRange?.end ?? new Date(currentYear, 11, 31);
 
   useEffect(() => {
     if (selectedRange) {
@@ -37,20 +25,17 @@ const OJTAttendanceTable = () => {
   }, [selectedRange]);
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-      <div className="rounded-xl bg-white p-4 shadow lg:col-span-2">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-md font-semibold">Select School Year</h2>
+    <div className="grid items-start gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="border border-[#152238]/12 bg-white p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">Select a day</h3>
           <select
+            aria-label="School year"
             value={selectedSchoolYear}
-            onChange={(e) => setSelectedSchoolYear(e.target.value)}
-            className="rounded-md border px-2 py-1 font-bold"
+            onChange={(event) => setSelectedSchoolYear(event.target.value)}
+            className="border border-[#152238]/15 bg-white px-2 py-1.5 text-xs font-semibold"
           >
-            {ranges?.map((r) => (
-              <option key={r.yearRange} value={r.yearRange}>
-                {r.yearRange}
-              </option>
-            ))}
+            {ranges?.map((range) => <option key={range.yearRange} value={range.yearRange}>{range.yearRange}</option>)}
             <option value={currentSchoolYear}>Current</option>
           </select>
         </div>
@@ -58,23 +43,17 @@ const OJTAttendanceTable = () => {
           className="w-full"
           selected={selectedDate}
           month={focusedMonth}
-          onMonthChange={(month) => setFocusedMonth(month)}
-          onDayClick={(date) => setSelectedDate(date)}
-          // optional: disable out-of-range dates
-          disabled={(date) =>
-            isBefore(date, startOfDay(start)) || isAfter(date, endOfDay(end))
-          }
+          onMonthChange={setFocusedMonth}
+          onDayClick={setSelectedDate}
+          disabled={(date) => isBefore(date, startOfDay(start)) || isAfter(date, endOfDay(end))}
         />
-        <p className="mt-2 text-center text-xs text-gray-500">
-          OJT Range: {start.toDateString()} → {end.toDateString()}
+        <p className="mt-3 border-t border-[#152238]/10 pt-3 text-xs text-slate-500">
+          Range: {start.toDateString()} – {end.toDateString()}
         </p>
       </div>
-
-      {/* Student Table (Date-Synced) */}
-      <div className="lg:col-span-3">
-        <InternTable selectedDate={selectedDate} />
-      </div>
+      <InternTable selectedDate={selectedDate} />
     </div>
   );
 };
+
 export default OJTAttendanceTable;

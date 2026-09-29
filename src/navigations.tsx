@@ -17,7 +17,6 @@ import { DepartmentAdviserDashboard } from "./pages/dashboard/DepartmentAdviserD
 import InternDashboardPage from "./pages/dashboard/InternDashboardPage";
 import { PublicLayout } from "./layout/PublicLayout";
 import BaseLayout from "./layout/BaseLayout";
-import AdminLoginPage from "./pages/authentication/AdminLoginPage";
 import DepartmentAttendanceEvaluation from "./pages/attendance-evaluation/DepartmentAttendanceEvaluation";
 import AccountPage from "./pages/account/AccountPage";
 import OJTAccomplishments from "./pages/accomplishment/OJTAccomplishments";
@@ -34,7 +33,6 @@ registerGroupAppRoutes({
   children: [
     { path: "login", auth: true, element: <LoginPage /> },
     // { path: "register", auth: true, element: <RegisterPage /> },
-    { path: "admin/login", public: true, element: <AdminLoginPage /> },
     {
       path: "/setup-admin",
       auth: true,

@@ -105,13 +105,13 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
     if (type === "break-out" || type === "break-in") {
       return "bg-amber-50 text-amber-700 border-amber-200";
     }
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    return "bg-blue-50 text-blue-700 border-blue-200";
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95">
+        <button className="flex items-center gap-2 bg-[#1677ff] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-100 transition-all hover:bg-[#0864db] active:translate-y-px">
           <FileText size={16} />
           <span>Generate Accomplishment Report</span>
         </button>
@@ -151,7 +151,7 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-black tracking-widest text-emerald-600 uppercase print:text-[9px]">
+                <p className="text-xs font-black tracking-widest text-blue-600 uppercase print:text-[9px]">
                   {getRangeLabel()}
                 </p>
                 <p className="mt-1 text-[9px] font-bold tracking-widest text-slate-400 uppercase print:hidden">
@@ -235,9 +235,9 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
                                   <div className="flex items-center justify-end gap-1">
                                     <CheckCircle2
                                       size={12}
-                                      className="text-emerald-500 print:h-2.5 print:w-2.5"
+                                      className="text-blue-500 print:h-2.5 print:w-2.5"
                                     />
-                                    <span className="text-[9px] font-bold text-emerald-600 uppercase print:text-[7px]">
+                                    <span className="text-[9px] font-bold text-blue-600 uppercase print:text-[7px]">
                                       Logged
                                     </span>
                                   </div>
@@ -318,7 +318,7 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
         {/* ========================================================= */}
         <div className="z-10 flex h-full w-[360px] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] print:hidden">
           <div className="border-b border-slate-100 bg-slate-50/50 p-6">
-            <div className="mb-1 flex items-center gap-2 text-emerald-600">
+            <div className="mb-1 flex items-center gap-2 text-blue-600">
               <Settings2 size={16} />
               <h2 className="text-[10px] font-black tracking-widest uppercase">
                 Report Settings
@@ -349,7 +349,7 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
                         from: e.target.value,
                       }))
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
 
@@ -364,7 +364,7 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
                       setDateRange((prev) => ({ ...prev, to: e.target.value }))
                     }
                     min={dateRange.from}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
 
@@ -393,7 +393,7 @@ const AttendanceReportDialog: React.FC<AttendanceReportDialogProps> = ({
             <button
               onClick={() => window.print()}
               disabled={reportData.length === 0}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-5 text-sm font-black tracking-widest text-white uppercase shadow-xl transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="flex w-full items-center justify-center gap-2 bg-[#1677ff] py-5 text-sm font-bold tracking-widest text-white uppercase shadow-xl transition-all hover:bg-[#0864db] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               <Printer size={20} />
               Print Report

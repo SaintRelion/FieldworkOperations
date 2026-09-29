@@ -10,6 +10,8 @@ import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { toDate } from "@saintrelion/time-functions";
+import { attendanceDateKey } from "@/lib/attendance";
+import { dtrAttendanceMap, dtrDay, dtrMonths } from "@/lib/dtr";
 
 interface DTRReportDialogProps {
   groupedAttendance: [string, Attendance[]][];
@@ -21,9 +23,12 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
   const user = useCurrentUser<User>();
   const fullName = `${user.firstName} ${user.lastName}`.toUpperCase();
 
-  const today = new Date();
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const latestDate = groupedAttendance.flatMap(([, logs]) => logs)
+    .map((log) => toDate(log.createdAt))
+    .filter((date): date is Date => date !== null)
+    .sort((a, b) => b.getTime() - a.getTime())[0] ?? new Date();
+  const firstDay = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+  const lastDay = new Date(latestDate.getFullYear(), latestDate.getMonth() + 1, 0);
 
   const formatDateInput = (d: Date) => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -34,22 +39,8 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
     to: formatDateInput(lastDay),
   });
 
-  const attendanceMap = useMemo(() => {
-    const map: Record<string, Attendance[]> = {};
-    groupedAttendance.forEach(([_, logs]) => {
-      console.log(_);
-      logs.forEach((log) => {
-        const d = toDate(log.createdAt);
-
-        if (d && !isNaN(d.getTime())) {
-          const key = formatDateInput(d);
-          if (!map[key]) map[key] = [];
-          map[key].push(log);
-        }
-      });
-    });
-    return map;
-  }, [groupedAttendance]);
+  const attendanceMap = useMemo(() => dtrAttendanceMap(groupedAttendance.flatMap(([, logs]) => logs)), [groupedAttendance]);
+  const months = useMemo(() => dtrMonths(dateRange.from, dateRange.to), [dateRange]);
 
   // FIX: Updated to include AM/PM natively using toLocaleTimeString
   const extractTime = (createdAt?: string) => {
@@ -66,10 +57,12 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
     });
   };
 
-  const getMonthRangeLabel = () => {
+  const getMonthRangeLabel = (month: Date) => {
     if (!dateRange.from) return "";
-    const [fy, fm, fd] = dateRange.from.split("-");
-    const [ty, tm, td] = dateRange.to ? dateRange.to.split("-") : [fy, fm, fd];
+    const monthStart = attendanceDateKey(month);
+    const monthEnd = attendanceDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+    const [fy, fm, fd] = (dateRange.from > monthStart ? dateRange.from : monthStart).split("-");
+    const [ty, tm, td] = (dateRange.to < monthEnd ? dateRange.to : monthEnd).split("-");
 
     const fromDate = new Date(Number(fy), Number(fm) - 1, Number(fd));
     const toDate = new Date(Number(ty), Number(tm) - 1, Number(td));
@@ -85,7 +78,7 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
     return `${monthName}. ${Number(fd)} - ${toDate.toLocaleDateString("en-US", { month: "short" }).toUpperCase()}. ${Number(td)}, ${ty}`;
   };
 
-  const DtrForm = () => (
+  const DtrForm = ({ month }: { month: Date }) => (
     <div className="mx-auto w-full max-w-[400px] bg-white font-sans text-black print:max-w-none">
       <div className="mb-2 text-center">
         <p className="font-serif text-[10px] italic">
@@ -104,7 +97,7 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
       <div className="mb-2 flex items-end justify-between px-2 text-[10px]">
         <span>FOR THE MONTH OF:</span>
         <span className="min-w-[140px] border-b border-black px-2 pb-0.5 text-center font-bold tracking-widest">
-          {getMonthRangeLabel()}
+          {getMonthRangeLabel(month)}
         </span>
       </div>
 
@@ -157,42 +150,8 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
           {Array.from({ length: 31 }).map((_, i) => {
             const dayOfMonth = i + 1;
 
-            const [year, month] = (
-              dateRange.from || formatDateInput(new Date())
-            ).split("-");
-            const rowDate = new Date(
-              Number(year),
-              Number(month) - 1,
-              dayOfMonth,
-            );
-
-            const isValidMonthDate = rowDate.getMonth() === Number(month) - 1;
-
-            let showWeekend = false;
-            let dayOfWeek = 0;
-            let timeIn, breakOut, breakIn, timeOut;
-
-            if (isValidMonthDate) {
-              dayOfWeek = rowDate.getDay();
-              showWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-              const fromBoundary = new Date(`${dateRange.from}T00:00:00`);
-              const toBoundary = dateRange.to
-                ? new Date(`${dateRange.to}T23:59:59`)
-                : new Date(8640000000000000);
-              const isWithinRange =
-                rowDate >= fromBoundary && rowDate <= toBoundary;
-
-              if (isWithinRange) {
-                const key = formatDateInput(rowDate);
-                const logs = attendanceMap[key] || [];
-
-                timeIn = logs.find((l) => l.type === "time-in")?.createdAt;
-                breakOut = logs.find((l) => l.type === "break-out")?.createdAt;
-                breakIn = logs.find((l) => l.type === "break-in")?.createdAt;
-                timeOut = logs.find((l) => l.type === "time-out")?.createdAt;
-              }
-            }
+            const { valid: isValidMonthDate, weekday: dayOfWeek, showWeekend, timeIn, breakOut, breakIn, timeOut } =
+              dtrDay(month, dayOfMonth, dateRange.from, dateRange.to, attendanceMap);
 
             return (
               <tr key={dayOfMonth} className="h-[22px]">
@@ -292,11 +251,14 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
         {/* LEFT COLUMN: PREVIEW AREA */}
         <div className="flex flex-1 justify-center overflow-y-auto p-8 print:block print:overflow-visible print:p-0">
           <div className="mb-8 h-full min-h-[1256px] w-full max-w-[950px] bg-white p-8 shadow-xl ring-1 ring-slate-200 sm:p-12 print:m-0 print:min-h-0 print:max-w-none print:p-0 print:shadow-none print:ring-0">
-            <div className="flex h-full justify-center print:grid print:grid-cols-2 print:items-start print:gap-8">
-              <DtrForm />
-              <div className="hidden print:block">
-                <DtrForm />
-              </div>
+            <div className="space-y-10 print:space-y-0">
+              {months.map((month) => (
+                <div key={attendanceDateKey(month)} className="flex justify-center print:grid print:break-after-page print:grid-cols-2 print:items-start print:gap-8 print:last:break-after-auto">
+                  <DtrForm month={month} />
+                  <div className="hidden print:block"><DtrForm month={month} /></div>
+                </div>
+              ))}
+              {months.length === 0 && <p className="text-sm text-slate-600">Choose a valid date range to preview your DTR.</p>}
             </div>
           </div>
         </div>
@@ -355,8 +317,8 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
                 </div>
                 <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-[10px] leading-tight font-bold text-slate-500 italic">
-                    Note: A Civil Service DTR prints exactly 31 days. Time logs
-                    will only be populated for the dates selected in this range.
+                    Each selected month gets its own DTR. Recorded weekend shifts
+                    are included. Only dates within the selected range are populated.
                   </p>
                 </div>
               </div>
@@ -366,8 +328,8 @@ const DTRReportDialog: React.FC<DTRReportDialogProps> = ({
           <div className="border-t border-slate-100 bg-white p-6">
             <button
               onClick={() => window.print()}
-              disabled={!dateRange.from}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-5 text-sm font-black tracking-widest text-white uppercase shadow-xl transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+              disabled={months.length === 0}
+              className="flex w-full items-center justify-center gap-2 bg-[#1677ff] py-5 text-sm font-bold tracking-widest text-white uppercase shadow-xl transition-all hover:bg-[#0864db] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               <Printer size={20} />
               Print DTR (2 Copies)

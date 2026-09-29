@@ -94,7 +94,7 @@ export const AccomplishmentReportDialog: React.FC<
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl shadow-slate-200 transition-all hover:bg-emerald-600 active:scale-95">
+        <button className="flex items-center gap-2 bg-[#1677ff] px-6 py-3 text-[10px] font-bold tracking-[0.2em] text-white uppercase shadow-lg transition-all hover:bg-[#0864db] active:translate-y-px">
           <FileText size={16} />
           Generate Report
         </button>
@@ -198,7 +198,7 @@ export const AccomplishmentReportDialog: React.FC<
                 <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
                   Entries
                 </span>
-                <span className="text-2xl font-black text-emerald-600">
+                <span className="text-2xl font-black text-[#1677ff]">
                   {totalEntries}
                 </span>
               </div>
@@ -210,7 +210,7 @@ export const AccomplishmentReportDialog: React.FC<
             <button
               onClick={() => window.print()}
               disabled={reportData.length === 0}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-5 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="flex w-full items-center justify-center gap-2 bg-[#1677ff] py-5 text-[10px] font-bold tracking-[0.2em] text-white uppercase shadow-xl transition-all hover:bg-[#0864db] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               <Printer size={18} />
               Print Report
@@ -238,7 +238,7 @@ export const AccomplishmentReportDialog: React.FC<
               {/* Document header */}
               <div className="border-b border-slate-100 pb-8">
                 <h1 className="text-4xl font-black tracking-tighter text-slate-800 uppercase">
-                  OJT <span className="text-emerald-600">Accomplishment</span>{" "}
+                  OJT <span className="text-[#1677ff]">Accomplishment</span>{" "}
                   Report
                 </h1>
                 <p className="mt-2 text-[10px] font-black tracking-[0.4em] text-slate-400 uppercase">
@@ -326,8 +326,8 @@ function ReportEntryRow({ item }: { item: Accomplishment }) {
           {item.description}
         </p>
         <div className="flex shrink-0 items-center gap-1.5">
-          <CheckCircle2 size={13} className="text-emerald-500" />
-          <span className="text-[9px] font-black tracking-widest text-emerald-500 uppercase">
+          <CheckCircle2 size={13} className="text-blue-500" />
+          <span className="text-[9px] font-black tracking-widest text-blue-500 uppercase">
             Done
           </span>
         </div>

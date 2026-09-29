@@ -123,10 +123,10 @@ export default function FirstAdminSetup() {
           </button>
 
           <a
-            href="/admin/login"
+            href="/login"
             className="block w-full text-center text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900"
           >
-            Back to Admin Login
+            Back to Login
           </a>
         </form>
       </div>

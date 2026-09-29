@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatReadableDateTime } from "@saintrelion/time-functions";
 import type { Attendance } from "@/models/Attendance";
+import { attendanceOutcome } from "@/lib/attendance";
 import { MapPin, Calendar, ShieldCheck, ImageOff, X } from "lucide-react";
 
 interface ViewAttendancePopupProps {
@@ -21,6 +22,7 @@ export default function ViewAttendancePopup({
 
   const lat = record?.location?.[0];
   const lng = record?.location?.[1];
+  const outcome = attendanceOutcome(record);
 
   useEffect(() => {
     async function fetchAddress() {
@@ -48,12 +50,12 @@ export default function ViewAttendancePopup({
       <DialogContent className="max-w-4xl overflow-hidden rounded-[2.5rem] border-none bg-slate-900 p-0 shadow-2xl">
         {/* Header Overlay */}
         <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg">
+          <div className="flex h-10 w-10 items-center justify-center bg-[#1677ff] text-white shadow-lg">
             <ShieldCheck size={20} />
           </div>
           <div>
             <h2 className="text-xs font-black tracking-[0.3em] text-white/50 uppercase">
-              Verified Record
+              Attendance Record
             </h2>
             <p className="text-sm font-bold text-white">
               {record.type.replace("-", " ").toUpperCase()}
@@ -90,7 +92,7 @@ export default function ViewAttendancePopup({
 
             {/* Timestamp Overlay */}
             <div className="absolute bottom-6 left-6 flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 backdrop-blur-md">
-              <Calendar size={12} className="text-emerald-400" />
+              <Calendar size={12} className="text-blue-400" />
               <span className="text-[10px] font-black tracking-widest text-white uppercase">
                 {formatReadableDateTime(record.createdAt)}
               </span>
@@ -107,7 +109,7 @@ export default function ViewAttendancePopup({
               {/* MINI MAP SECTION */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-slate-700">
-                  <MapPin size={16} className="text-emerald-500" />
+                  <MapPin size={16} className="text-blue-500" />
                   <span className="text-xs font-black tracking-widest uppercase">
                     GPS Localization
                   </span>
@@ -162,16 +164,14 @@ export default function ViewAttendancePopup({
                     Audit Status
                   </span>
                   <div className="flex gap-2">
-                    {record.evaluated ? (
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase">
-                        Cleared
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-black text-amber-700 uppercase">
-                        Pending
-                      </span>
-                    )}
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${record.evaluated ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>
+                      {record.evaluated ? "Cleared" : "Pending"}
+                    </span>
                   </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-slate-500">Attendance outcome</span>
+                  <span className={`px-3 py-1 text-xs font-semibold ${outcome.className}`}>{outcome.label}</span>
                 </div>
               </div>
             </div>

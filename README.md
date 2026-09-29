@@ -39,7 +39,13 @@ OJTLOG is a role-based On-the-Job Training (OJT) attendance and management syste
 - pnpm
 - Private `@saintrelion/*` libraries
 
-This version uses the SaintRelion Firebase provider for rapid online development/prototyping. The same library architecture also supported a local mock provider and a generic REST API provider.
+## Data access architecture
+
+OJTLOG uses the **Firebase Client SDK** through the SaintRelion data-access libraries. Firebase was used as the provider for this version because it allowed the application and its workflows to be developed quickly without requiring a separate backend API during development.
+
+The library architecture separates the application from the underlying data provider. In addition to Firebase, it supported a **local mock provider** for local development and a **generic REST API provider** for deployments backed by a separate server/API.
+
+Firebase can also be used for a production deployment, but it should be configured with appropriately restrictive **Firestore Security Rules and authentication controls** rather than permissive development rules.
 
 ## Access to private dependencies
 
@@ -87,13 +93,15 @@ A fresh Firestore database has no OJTLOG users. Use the temporary restoration ro
 /setup-admin
 ```
 
-Create the first administrator, then sign in through:
+Create the first administrator, then sign in through the shared portal:
 
 ```text
-/admin/login
+/login
 ```
 
-From the Admin dashboard, department adviser and intern accounts can then be registered. Regular interns and advisers use `/login`.
+Administrators, department advisers, and interns all use `/login`. After authentication, the role-based router sends each user to the appropriate workspace.
+
+From the Admin workspace, department adviser and intern accounts can then be registered.
 
 Remove or disable `/setup-admin` after initializing the database.
 

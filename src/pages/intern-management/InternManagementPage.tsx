@@ -49,7 +49,6 @@ export default function InternManagementPage() {
   const [search, setSearch] = useState("");
   const [filterDept, setFilterDept] = useState("ALL");
 
-  // DATA FETCHING
   const internInfos = getInternInfos().data;
   const interns = getUsers(
     user.roles?.[0] === "admin"
@@ -57,15 +56,12 @@ export default function InternManagementPage() {
       : { filters: { role: "intern", department: user.department } },
   ).data;
 
-  // MAPPING & FILTERING DATA
   const filteredRows: InternRow[] = useMemo(() => {
     return interns
       .filter((intern) => {
-        // Department Filter
         const matchesDept =
           filterDept === "ALL" || intern.department === filterDept;
 
-        // Text Search Filter (name, email)
         const term = search.toLowerCase();
         const matchesSearch =
           intern.firstName.toLowerCase().includes(term) ||
@@ -91,7 +87,6 @@ export default function InternManagementPage() {
       });
   }, [interns, internInfos, filterDept, search]);
 
-  // ACTIONS
   const toggleConfirmation = async (id: string) => {
     const target = interns.find((i) => i.id === id);
     if (!target) return;
@@ -143,16 +138,12 @@ export default function InternManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* HEADER: MINT & SLATE */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 pb-12">
+      <div className="flex flex-col gap-5 border-b border-[#152238]/15 pb-7 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            Intern <span className="text-emerald-600">Management</span>
-          </h1>
-          <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">
-            OJT Student Monitoring & Logs
-          </p>
+          <p className="mb-2 text-[11px] font-bold tracking-[0.18em] text-[#1677ff] uppercase">{user.roles?.[0] === "admin" ? "Administration" : "Adviser"} / directory</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.05em] text-[#152238] sm:text-4xl">Interns</h1>
+          <p className="mt-2 text-sm text-slate-600">Training assignments, hours, and access in one list.</p>
         </div>
 
         {user.roles?.[0] === "departmentadviser" && (
@@ -160,9 +151,8 @@ export default function InternManagementPage() {
         )}
       </div>
 
-      {/* SEARCH & FILTER BAR */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-1/2 md:w-1/3">
+      <div className="flex flex-col gap-3 border border-[#152238]/12 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
           <Search
             className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
             size={16}
@@ -171,7 +161,7 @@ export default function InternManagementPage() {
             placeholder="Filter by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-xl border-slate-200 bg-white pl-10 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10"
+            className="border-slate-200 bg-white pl-10 focus-visible:border-[#1677ff] focus-visible:ring-[#1677ff]/10"
           />
         </div>
 
@@ -184,7 +174,7 @@ export default function InternManagementPage() {
             <select
               value={filterDept}
               onChange={(e) => setFilterDept(e.target.value)}
-              className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white pr-10 pl-9 text-sm font-bold text-slate-600 shadow-sm transition-all outline-none hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 sm:w-auto"
+              className="h-10 w-full cursor-pointer appearance-none border border-slate-200 bg-white pr-10 pl-9 text-sm font-bold text-slate-600 shadow-sm transition-all outline-none hover:border-slate-300 focus:border-[#1677ff] focus:ring-2 focus:ring-[#1677ff]/10 sm:w-auto"
             >
               <option value="ALL">All Departments</option>
               {Object.keys(Department).map((dept) => (
@@ -200,12 +190,12 @@ export default function InternManagementPage() {
             </div>
           </div>
         )}
+        <span className="text-xs font-medium text-slate-500">{filteredRows.length} {filteredRows.length === 1 ? "intern" : "interns"}</span>
       </div>
 
-      {/* CUSTOM HTML TABLE */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+      <div className="overflow-x-auto border border-slate-200 bg-white">
+        <table className="min-w-[900px] w-full text-left text-sm">
+          <thead className="border-b border-[#09111f] bg-[#09111f] text-[10px] font-bold tracking-[0.16em] text-slate-300 uppercase">
             <tr>
               <th className="px-6 py-4">Identity</th>
               <th className="px-6 py-4">Username</th>
@@ -221,14 +211,14 @@ export default function InternManagementPage() {
             {filteredRows.map((d) => (
               <tr
                 key={d.id}
-                className="group transition-colors hover:bg-emerald-50/30"
+                className="group transition-colors hover:bg-blue-50/50"
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-9 w-9 items-center justify-center rounded-xl text-[10px] font-black ${
                         d.isEnabled
-                          ? "bg-emerald-100 text-emerald-700"
+                          ? "bg-blue-100 text-blue-700"
                           : "bg-slate-100 text-slate-400"
                       }`}
                     >
@@ -253,20 +243,22 @@ export default function InternManagementPage() {
                 </td>
 
                 <td className="px-6 py-4">
-                  <button
-                    onClick={() => handleEditDepartment(d)}
-                    className="flex items-center gap-2 rounded-md border border-slate-100 bg-white px-2 py-1 text-[10px] font-black text-slate-500 uppercase shadow-sm transition-all hover:border-emerald-200 hover:text-emerald-600"
-                  >
-                    <Landmark size={12} className="text-slate-300" />
-                    <span>{d.department}</span>
-                  </button>
+                  {user.roles?.[0] === "departmentadviser" ? (
+                    <button
+                      onClick={() => handleEditDepartment(d)}
+                      className="flex items-center gap-2 border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-500 uppercase shadow-sm transition-all hover:border-blue-300 hover:text-blue-600"
+                    >
+                      <Landmark size={12} className="text-slate-300" />
+                      <span>{d.department}</span>
+                    </button>
+                  ) : <span className="text-xs text-slate-600">{d.department}</span>}
                 </td>
 
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2 font-medium text-slate-600">
                     <Briefcase
                       size={14}
-                      className="text-slate-300 transition-colors group-hover:text-emerald-500"
+                      className="text-slate-300 transition-colors group-hover:text-blue-500"
                     />
                     <span className="text-xs">{d.trainingCompany}</span>
                   </div>
@@ -274,7 +266,7 @@ export default function InternManagementPage() {
 
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-emerald-500" />
+                    <Clock size={14} className="text-blue-500" />
                     <span className="font-bold text-slate-700">
                       {d.remainingHours}
                     </span>
@@ -295,7 +287,7 @@ export default function InternManagementPage() {
                         className={`h-8 gap-2 rounded-lg px-3 font-bold transition-all active:scale-95 ${
                           d.isEnabled
                             ? "border-slate-200 text-slate-600 hover:bg-slate-100"
-                            : "border-transparent bg-slate-900 text-white shadow-md shadow-slate-200 hover:bg-emerald-600"
+                            : "border-transparent bg-[#1677ff] text-white shadow-md shadow-blue-100 hover:bg-[#0864db]"
                         }`}
                       >
                         {d.isEnabled ? (

@@ -1,12 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ShieldCheck,
   Settings as SettingsIcon,
-  UserCheck,
   Calendar,
   CheckCircle2,
-  ArrowRight,
   ImageOff,
 } from "lucide-react";
 
@@ -15,10 +12,10 @@ import { useResourceLocked } from "@saintrelion/data-access-layer";
 import {
   formatReadableDate,
   toDate,
-  getCurrentDateTimeString,
   formatReadableDateTime,
 } from "@saintrelion/time-functions";
 import { sortByCreatedAt } from "@/lib/utils";
+import { attendanceDateKey } from "@/lib/attendance";
 
 import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import type {
@@ -97,7 +94,7 @@ export default function DepartmentAttendanceEvaluation() {
       if (users.some((u) => u.id === log.userId)) {
         const d = toDate(log.createdAt);
         if (!d) return;
-        const dateKey = d.toISOString().split("T")[0];
+        const dateKey = attendanceDateKey(d);
         if (!map[log.userId]) map[log.userId] = {};
         if (!map[log.userId][dateKey]) map[log.userId][dateKey] = [];
         map[log.userId][dateKey].push(log);
@@ -144,14 +141,14 @@ export default function DepartmentAttendanceEvaluation() {
         // Automatically mark the 'Exit' log as evaluated to keep the UI clean
         await updateAttendance.run({
           id: pairedLog.id,
-          payload: { evaluated: true, attribute: "" },
+          payload: { evaluated: true, attribute: attr },
         });
 
         const diff =
           toDate(pairedLog.createdAt)!.getTime() -
           toDate(log.createdAt)!.getTime();
         const workedHours = Math.ceil(diff / 3600000);
-        remaining -= workedHours;
+        if (attr === "" || attr === "tardy") remaining -= workedHours;
       }
     }
 
@@ -185,47 +182,30 @@ export default function DepartmentAttendanceEvaluation() {
   // --- RENDER: SETTINGS CHECK ---
   if (!departmentSettings) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center p-12 text-center">
-        <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-slate-900 text-emerald-500 shadow-2xl shadow-slate-200">
-          <SettingsIcon
-            size={40}
-            className="animate-[spin_4s_linear_infinite]"
-          />
-        </div>
-        <h2 className="text-3xl font-black tracking-tighter text-slate-800 uppercase">
-          System Sync Required
+      <div className="mx-auto max-w-2xl border border-[#152238]/12 bg-white px-6 py-12 text-center sm:px-10">
+        <SettingsIcon size={28} className="mx-auto mb-5 text-[#1677ff]" />
+        <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#152238]">
+          Set your shift hours first
         </h2>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed font-bold text-slate-400">
-          The evaluation terminal cannot process tardiness without department
-          time-bounds.
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
+          Attendance review needs your department’s start and end times to evaluate late entries.
         </p>
         <button
           onClick={() => navigate("/departmentadviser/settings")}
-          className="mt-10 flex items-center gap-3 rounded-2xl bg-emerald-600 px-10 py-4 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95"
+          className="mt-7 inline-flex min-h-11 items-center gap-2 bg-[#1677ff] px-5 text-sm font-semibold text-white hover:bg-[#0864db]"
         >
-          <SettingsIcon size={16} /> Configure Settings
+          <SettingsIcon size={16} /> Open shift rules
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-12 pb-32">
-      {/* HEADER */}
-      <div className="flex flex-col justify-between gap-6 border-b border-slate-200 px-2 pb-10 md:flex-row md:items-center">
-        <div className="flex items-center gap-5">
-          <div className="flex h-16 w-16 items-center justify-center rounded-[1.8rem] bg-slate-900 text-white shadow-2xl shadow-slate-200">
-            <ShieldCheck size={32} strokeWidth={1.5} />
-          </div>
-          <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-800 uppercase">
-              Audit <span className="text-emerald-600">Terminal</span>
-            </h1>
-            <p className="mt-1 text-[10px] font-black tracking-[0.4em] text-slate-400 uppercase">
-              Active Monitoring / {user.department}
-            </p>
-          </div>
-        </div>
+    <div className="space-y-8 pb-12">
+      <div className="border-b border-[#152238]/15 pb-7">
+        <p className="mb-2 text-[11px] font-bold tracking-[0.18em] text-[#1677ff] uppercase">Adviser / review</p>
+        <h1 className="text-3xl font-semibold tracking-[-0.05em] text-[#152238] sm:text-4xl">Review attendance</h1>
+        <p className="mt-2 text-sm text-slate-600">Check captured entries and apply the correct attendance outcome for {user.department}.</p>
       </div>
 
       {selectedLog && (
@@ -236,22 +216,19 @@ export default function DepartmentAttendanceEvaluation() {
         />
       )}
 
-      {/* USER LIST */}
-      <div className="space-y-16">
+      <div className="space-y-8">
         {Object.entries(grouped).map(([userId, dates]) => {
           const u = users.find((x) => x.id === userId);
           return (
-            <div key={userId} className="space-y-8">
-              <div className="flex items-center gap-4 px-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shadow-inner">
-                  <UserCheck size={20} />
-                </div>
-                <h2 className="text-2xl font-black tracking-tighter text-slate-800">
+            <section key={userId} className="space-y-4">
+              <div className="flex items-center justify-between gap-4 border-b border-[#152238]/15 pb-3">
+                <h2 className="text-lg font-semibold text-[#152238]">
                   {u?.firstName} {u?.lastName}
                 </h2>
+                <span className="text-xs text-slate-500">{Object.keys(dates).length} {Object.keys(dates).length === 1 ? "day" : "days"}</span>
               </div>
 
-              <div className="ml-5 space-y-8 border-l-2 border-slate-100 pl-10">
+              <div className="space-y-4">
                 {Object.entries(dates).map(([date, logs]) => (
                   <DayCard
                     key={date}
@@ -272,9 +249,12 @@ export default function DepartmentAttendanceEvaluation() {
                   />
                 ))}
               </div>
-            </div>
+            </section>
           );
         })}
+        {Object.keys(grouped).length === 0 && (
+          <p className="border border-dashed border-[#152238]/20 bg-white px-6 py-12 text-center text-sm text-slate-500">No attendance is available for review yet.</p>
+        )}
       </div>
     </div>
   );
@@ -295,44 +275,38 @@ function DayCard({
   onView: (l: Attendance) => void;
   onMark: (l: Attendance, attr: string) => void;
 }) {
-  const isToday = date === getCurrentDateTimeString().slice(0, 10);
+  const isToday = date === attendanceDateKey(new Date());
 
   return (
-    <div
-      className={`rounded-[2.5rem] border p-8 transition-all ${isToday ? "border-emerald-100 bg-white shadow-2xl shadow-emerald-900/5" : "border-slate-100 bg-slate-50/50"}`}
-    >
-      <div className="mb-8 flex items-center justify-between">
+    <div className="border border-[#152238]/12 bg-white">
+      <div className="flex items-center justify-between border-b border-[#152238]/10 px-5 py-4 sm:px-6">
         <div className="flex items-center gap-3">
-          <Calendar size={16} className="text-slate-400" />
-          <span className="text-[11px] font-black tracking-widest text-slate-800 uppercase">
+          <Calendar size={16} className="text-[#1677ff]" />
+          <span className="text-sm font-semibold text-[#152238]">
             {formatReadableDate(date)}
           </span>
           {isToday && (
-            <span className="animate-pulse rounded-full bg-emerald-500 px-3 py-1 text-[9px] font-black text-white uppercase">
-              Live Session
+            <span className="bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700 uppercase">
+              Today
             </span>
           )}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="divide-y divide-[#152238]/10">
         {logs.map((log: Attendance) => {
           const isEntry = log.type === "time-in" || log.type === "break-in";
           const late = isEntry && isLate(log.type, log.createdAt, settings);
 
           return (
-            <div
-              key={log.id}
-              onClick={() => onView(log)}
-              className="group flex cursor-pointer items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-4 transition-all hover:border-emerald-200 hover:shadow-lg"
-            >
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-20 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+            <div key={log.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <button type="button" onClick={() => onView(log)} className="flex min-w-0 items-center gap-4 text-left">
+                <div className="h-14 w-16 shrink-0 overflow-hidden bg-slate-100">
                   {log.image ? (
                     <img
                       src={log.image}
-                      className="h-full w-full object-cover grayscale transition-all group-hover:grayscale-0"
-                      alt="auth"
+                      className="h-full w-full object-cover"
+                      alt="Attendance capture"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-slate-50 text-slate-300">
@@ -342,7 +316,7 @@ function DayCard({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-[9px] font-black tracking-widest text-slate-400 uppercase">
+                    <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-500 uppercase">
                       {log.type.replace("-", " ")}
                     </p>
                     {late && !log.evaluated && (
@@ -351,18 +325,15 @@ function DayCard({
                       </span>
                     )}
                   </div>
-                  <p className="text-base font-black text-slate-800">
-                    {formatReadableDateTime(log.createdAt).split("at")[1]}
+                  <p className="text-sm font-semibold text-[#152238]">
+                    {formatReadableDateTime(log.createdAt)}
                   </p>
                 </div>
-              </div>
+              </button>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {!log.evaluated ? (
-                  <div
-                    className="flex gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="flex flex-wrap gap-2">
                     {isEntry ? (
                       <>
                         {late ? (
@@ -381,7 +352,7 @@ function DayCard({
                         ) : (
                           <AuditBtn
                             label="Verify"
-                            variant="emerald"
+                            variant="blue"
                             onClick={() => onMark(log, "")}
                           />
                         )}
@@ -400,13 +371,9 @@ function DayCard({
                 ) : (
                   <div className="flex items-center gap-3">
                     <StatusTag attr={log.attribute} />
-                    <CheckCircle2 size={18} className="text-emerald-500" />
+                    <CheckCircle2 size={18} className="text-[#1677ff]" />
                   </div>
                 )}
-                <ArrowRight
-                  size={16}
-                  className="text-slate-200 transition-transform group-hover:translate-x-1"
-                />
               </div>
             </div>
           );
@@ -428,8 +395,6 @@ function AuditBtn({
   onClick: () => void;
 }) {
   const styles: Record<string, string> = {
-    emerald:
-      "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white",
     amber: "bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white",
     blue: "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white",
     rose: "bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white",
@@ -437,7 +402,7 @@ function AuditBtn({
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl px-4 py-2 text-[9px] font-black tracking-widest uppercase transition-all ${styles[variant]}`}
+      className={`min-h-9 px-3 text-[10px] font-semibold uppercase transition-colors ${styles[variant]}`}
     >
       {label}
     </button>
@@ -447,7 +412,7 @@ function AuditBtn({
 function StatusTag({ attr }: { attr: string }) {
   if (!attr)
     return (
-      <span className="text-[9px] font-black text-emerald-500 uppercase">
+      <span className="text-[10px] font-semibold text-[#1677ff] uppercase">
         Cleared
       </span>
     );

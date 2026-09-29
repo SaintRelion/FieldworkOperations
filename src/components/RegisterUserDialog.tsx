@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { CreateInternInfo } from "@/models/InternInfo";
-import { Plus, UserCircle, Briefcase, AlertCircle } from "lucide-react";
+import { Plus, UserCircle, Briefcase, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 interface RegisterDialogProps {
@@ -34,7 +34,6 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
   const handleRegister = async (data: Record<string, string>) => {
     setError(null);
 
-    // 1. Basic Validation (Shared)
     if (
       !data.firstName?.trim() ||
       !data.lastName?.trim() ||
@@ -49,7 +48,6 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
       return;
     }
 
-    // 2. OJT Specific Validation
     if (role === "intern") {
       const hours = Number(data.requiredHours);
       if (isNaN(hours) || hours <= 0) {
@@ -62,7 +60,6 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
       }
     }
 
-    // 3. Execution
     const userId = await auth.register(
       { ...data, isEnabled: true, roles: [role], role: role },
       data.password,
@@ -81,47 +78,43 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
     }
   };
 
-  // Modern Mint UI styling variables
   const inputClass =
-    "w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none";
+    "w-full border border-[#152238]/15 bg-white px-3 py-2.5 text-sm transition-all focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10 focus:outline-none";
   const labelClass =
-    "text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block ml-1";
+    "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500";
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-emerald-600 active:scale-95">
+        <button className="flex items-center gap-2 border border-[#1677ff] bg-[#1677ff] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(22,119,255,0.16)] transition-all hover:bg-[#0864db] active:translate-y-px">
           <Plus className="h-4 w-4 stroke-[3]" />
           {triggerLabel}
         </button>
       </DialogTrigger>
 
-      {/* CHANGE: Increased max-width from sm:max-w-xl to sm:max-w-4xl or 5xl */}
-      <DialogContent className="rounded-3xl border-none shadow-2xl sm:max-w-4xl lg:max-w-5xl">
-        <DialogHeader className="border-b border-slate-100 pb-4">
-          <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">
-            Register{" "}
-            <span className="text-emerald-600">
-              {role === "intern" ? "OJT Intern" : "Department Adviser"}
-            </span>
+      <DialogContent className="max-h-[90vh] overflow-y-auto border border-[#152238]/15 bg-[#f8f6f0] p-0 sm:max-w-4xl lg:max-w-5xl">
+        <DialogHeader className="border-b border-[#152238]/10 bg-[#09111f] px-7 py-6 text-white">
+          <p className="text-[10px] font-bold tracking-[0.22em] text-[#81baff] uppercase">New directory record</p>
+          <DialogTitle className="text-2xl font-semibold tracking-[-0.04em] text-white">
+            Register {role === "intern" ? "OJT Intern" : "Department Adviser"}
           </DialogTitle>
+          <p className="text-sm font-normal text-slate-400">Create credentials and assign the required operational details.</p>
         </DialogHeader>
 
         {error && (
-          <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-xs font-bold text-red-600">
+          <div className="mx-7 mt-5 flex items-center gap-2 border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
             <AlertCircle size={16} />
             {error}
           </div>
         )}
 
-        <RenderForm wrapperClassName="pt-6">
-          <div className="flex flex-col items-start gap-10 lg:flex-row">
-            {/* LEFT SIDE: Identity & Credentials */}
-            <div className="w-full flex-1 space-y-6">
+        <RenderForm wrapperClassName="p-7">
+          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+            <div className="w-full space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2 text-emerald-600">
+                <div className="flex items-center gap-2 border-b border-[#152238]/10 pb-3 text-[#1677ff]">
                   <UserCircle size={18} />
-                  <h2 className="text-xs font-black tracking-widest uppercase">
+                  <h2 className="text-xs font-bold tracking-[0.18em] uppercase">
                     Account Credentials
                   </h2>
                 </div>
@@ -201,13 +194,12 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
               </div>
             </div>
 
-            {/* RIGHT SIDE: Contextual Info & Action */}
-            <div className="w-full space-y-6 lg:w-80 xl:w-[400px]">
+            <div className="w-full space-y-6">
               {role === "intern" && (
-                <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-6 shadow-sm">
-                  <div className="flex items-center gap-2 text-emerald-600">
+                <div className="space-y-5 border border-[#152238]/10 bg-white p-6 shadow-[0_10px_26px_rgba(9,17,31,0.05)]">
+                  <div className="flex items-center gap-2 border-b border-[#152238]/10 pb-3 text-[#b06b00]">
                     <Briefcase size={18} />
-                    <h2 className="text-xs font-black tracking-widest uppercase">
+                    <h2 className="text-xs font-bold tracking-[0.18em] uppercase">
                       Internship Details
                     </h2>
                   </div>
@@ -245,9 +237,10 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
                     auth.isLocked ? "Creating..." : `Confirm Registration`
                   }
                   isDisabled={auth.isLocked}
-                  buttonClassName="w-full rounded-xl bg-slate-900 py-4 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg active:scale-[0.98]"
+                  buttonClassName="w-full bg-[#1677ff] py-4 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(22,119,255,0.18)] transition-all hover:bg-[#0864db] active:translate-y-px"
                   onSubmit={handleRegister}
                 />
+                <div className="pointer-events-none -mt-[49px] flex h-12 items-center justify-end pr-4 text-white"><ArrowRight size={17} /></div>
                 <p className="px-4 text-center text-[10px] leading-relaxed tracking-tight text-slate-400 uppercase">
                   By confirming, you agree to the system's data management
                   policies.

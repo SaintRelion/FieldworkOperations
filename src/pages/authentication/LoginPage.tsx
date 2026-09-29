@@ -1,83 +1,78 @@
 import { useAuth } from "@saintrelion/auth-lib";
-import {
-  RenderForm,
-  RenderFormButton,
-  RenderFormField,
-} from "@saintrelion/forms";
-import { Users } from "lucide-react";
+import { RenderForm, RenderFormButton, RenderFormField } from "@saintrelion/forms";
+import { ArrowUpRight, Orbit } from "lucide-react";
 
 const LoginPage = () => {
   const auth = useAuth();
 
   const handleLogin = async (data: Record<string, string>) => {
-    await auth.login({
-      username: data.username,
-      password: data.password,
-    });
+    await auth.login({ username: data.username, password: data.password });
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#f0f9f4]">
-      <div className="w-full max-w-sm px-6">
-        {/* Simple Header */}
-        <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
-            <Users size={28} strokeWidth={2.5} />
+    <div className="flex min-h-screen flex-col bg-[#f4f1ea] text-[#152238]">
+      <header className="flex min-h-20 items-center justify-between border-b border-[#152238]/15 px-5 sm:px-8 lg:px-12">
+        <div className="flex items-center gap-3">
+          <div className="grid h-9 w-9 place-items-center bg-[#1677ff] text-white">
+            <Orbit size={20} strokeWidth={2.2} aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            OJT & Instructor <span className="text-emerald-600">Portal</span>
+          <span className="text-base font-bold tracking-[-0.04em]">FIELDWORK<span className="font-normal"> / OPS</span></span>
+        </div>
+        <span className="hidden text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase sm:block">
+          Training records & attendance
+        </span>
+      </header>
+
+      <main className="flex flex-1 items-center justify-center px-5 py-6 sm:px-8">
+        <div className="w-full max-w-[480px]">
+          <div className="mb-7 flex items-center gap-3 text-[11px] font-bold tracking-[0.22em] text-[#1677ff] uppercase">
+            <span className="h-px w-8 bg-[#1677ff]" /> Workspace access
+          </div>
+          <h1 className="text-[clamp(2.6rem,7vw,4.2rem)] font-semibold leading-[0.98] tracking-[-0.065em]">
+            Sign in to<br />Fieldwork<span className="text-[#1677ff]">.</span>
           </h1>
-          <p className="mt-1 text-xs font-bold tracking-widest text-slate-400 uppercase">
-            Sign in to continue
+          <p className="mt-5 max-w-sm text-sm leading-6 text-slate-600">
+            Record your shifts, review training progress, and manage the work that happens in the field.
+          </p>
+
+          <div className="mt-8 border-t border-[#152238]/20 pt-6">
+            <RenderForm wrapperClassName="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold tracking-[0.16em] text-slate-600 uppercase">Username</label>
+                <RenderFormField
+                  field={{ type: "text", name: "username", placeholder: "Enter your username" }}
+                  inputClassName="w-full border border-[#152238]/20 bg-white px-4 py-3 text-base outline-none transition-colors placeholder:text-slate-400 focus:border-[#1677ff] focus:ring-2 focus:ring-[#1677ff]/10"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold tracking-[0.16em] text-slate-600 uppercase">Password</label>
+                <RenderFormField
+                  field={{ type: "password", name: "password", placeholder: "Enter your password" }}
+                  inputClassName="w-full border border-[#152238]/20 bg-white px-4 py-3 text-base outline-none transition-colors placeholder:text-slate-400 focus:border-[#1677ff] focus:ring-2 focus:ring-[#1677ff]/10"
+                />
+              </div>
+              <div className="pt-2">
+                <RenderFormButton
+                  buttonClassName="w-full bg-[#09111f] px-5 py-4 text-sm font-semibold text-white transition-colors hover:bg-[#1677ff] disabled:bg-slate-400"
+                  buttonLabel={auth.isLocked ? "Signing in..." : "Continue to workspace"}
+                  isDisabled={auth.isLocked}
+                  onSubmit={handleLogin}
+                />
+              </div>
+            </RenderForm>
+          </div>
+
+          <p className="mt-6 flex items-center gap-2 text-xs text-slate-500">
+            One sign-in for interns, advisers, and administrators.
+            <ArrowUpRight size={13} aria-hidden="true" />
           </p>
         </div>
+      </main>
 
-        {/* Clean Login Card */}
-        <div className="rounded-2xl border border-emerald-100 bg-white p-8 shadow-xl shadow-emerald-900/5">
-          <RenderForm wrapperClassName="space-y-5">
-            <div className="space-y-1">
-              <label className="ml-1 text-[11px] font-black tracking-wider text-emerald-700/70 uppercase">
-                Username
-              </label>
-              <RenderFormField
-                field={{
-                  type: "text",
-                  name: "username",
-                  placeholder: "Enter username",
-                }}
-                inputClassName="w-full rounded-xl border border-emerald-50 bg-emerald-50/30 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="ml-1 text-[11px] font-black tracking-wider text-emerald-700/70 uppercase">
-                Password
-              </label>
-              <RenderFormField
-                field={{
-                  type: "password",
-                  name: "password",
-                  placeholder: "Enter password",
-                }}
-                inputClassName="w-full rounded-xl border border-emerald-50 bg-emerald-50/30 px-4 py-2.5 text-sm transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
-              />
-            </div>
-
-            <div className="pt-2">
-              <RenderFormButton
-                buttonClassName="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:bg-slate-300 shadow-lg shadow-slate-200"
-                buttonLabel={auth.isLocked ? "Verifying..." : "Login"}
-                isDisabled={auth.isLocked}
-                onSubmit={handleLogin}
-              />
-            </div>
-          </RenderForm>
-        </div>
-
-        <p className="mt-8 text-center text-[10px] font-bold tracking-[0.3em] text-emerald-800/30 uppercase">
-          Attendance System v2.0
-        </p>
-      </div>
+      <footer className="flex min-h-14 items-center justify-between gap-4 border-t border-[#152238]/15 px-5 text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase sm:px-8 lg:px-12">
+        <span>Fieldwork Operations</span>
+        <span>Authorized access only</span>
+      </footer>
     </div>
   );
 };

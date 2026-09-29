@@ -3,11 +3,9 @@ import { Outlet } from "react-router-dom";
 
 const BaseLayout = () => {
   return (
-    <div className="flex">
-      <SpecialHeader>
-        <Outlet />
-      </SpecialHeader>
-    </div>
+    <SpecialHeader>
+      <Outlet />
+    </SpecialHeader>
   );
 };
 export default BaseLayout;
