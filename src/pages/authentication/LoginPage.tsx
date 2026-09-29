@@ -1,6 +1,6 @@
 import { useAuth } from "@saintrelion/auth-lib";
 import { RenderForm, RenderFormButton, RenderFormField } from "@saintrelion/forms";
-import { ArrowUpRight, Orbit } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 const LoginPage = () => {
   const auth = useAuth();
@@ -14,7 +14,7 @@ const LoginPage = () => {
       <header className="flex min-h-20 items-center justify-between border-b border-[#152238]/15 px-5 sm:px-8 lg:px-12">
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center bg-[#1677ff] text-white">
-            <Orbit size={20} strokeWidth={2.2} aria-hidden="true" />
+            <img src="/fieldwork-icon.svg" className="h-9 w-9" alt="" aria-hidden="true" />
           </div>
           <span className="text-base font-bold tracking-[-0.04em]">FIELDWORK<span className="font-normal"> / OPS</span></span>
         </div>

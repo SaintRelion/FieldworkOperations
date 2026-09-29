@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from "react";
 import { useCurrentUser } from "@saintrelion/auth-lib";
 import { NavLink } from "react-router-dom";
-import { Menu, Orbit, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import type { User } from "@/models/User";
 import UserMenu from "./UserMenu";
 
@@ -43,9 +43,7 @@ export const SpecialHeader = ({ children }: { children: ReactNode }) => {
       <header className="relative z-30 bg-[#09111f] text-white">
         <div className="mx-auto flex min-h-[76px] max-w-[1500px] items-center gap-6 px-5 md:px-8 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center bg-[#1677ff] text-white">
-              <Orbit size={20} strokeWidth={2.2} aria-hidden="true" />
-            </div>
+            <img src="/fieldwork-icon.svg" className="h-9 w-9 shrink-0" alt="" aria-hidden="true" />
             <div className="min-w-0">
               <p className="truncate text-sm font-bold tracking-[-0.03em]">FIELDWORK / OPS</p>
               <p className="truncate text-[10px] tracking-[0.13em] text-slate-400 uppercase">{roleNames[role] ?? "Workspace"}</p>
