@@ -8,7 +8,7 @@ import { AuthProvider } from "@saintrelion/auth-lib";
 import { NotificationProvider } from "@saintrelion/notifications";
 import { router } from "./navigations";
 
-import "@/lib/firebase-client";
+
 
 import "@/sr-config";
 import "@/repositories/AttendanceRepo";
