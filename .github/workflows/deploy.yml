@@ -1,0 +1,26 @@
+name: Deploy existing release
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full 40-character released main commit SHA (both images must exist)
+        required: true
+        type: string
+      environment:
+        description: Deployment destination
+        required: true
+        default: production
+        type: choice
+        options: [production]
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/helper-deploy.yml
+    with:
+      environment: ${{ inputs.environment }}
+      sha: ${{ inputs.sha }}
+    secrets: inherit

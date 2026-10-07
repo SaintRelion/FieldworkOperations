@@ -1,0 +1,72 @@
+name: Deploy existing application release
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: application-${{ inputs.environment }}
+      cancel-in-progress: false
+    env:
+      RELEASE_SHA: ${{ inputs.sha }}
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      WEBSITE_IMAGE_NAME: ${{ vars.WEBSITE_IMAGE_NAME }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare release image names
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "WEBSITE_IMAGE_NAME=${WEBSITE_IMAGE_NAME:-ghcr.io/$owner/fieldwork-operations-website}" >> "$GITHUB_ENV"
+      # Private connectivity uses short-lived Tailscale federation; no SSH credentials.
+      - name: Check deployment prerequisites
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          TS_CLIENT_ID: ${{ vars.TS_CLIENT_ID }}
+          TS_AUDIENCE: ${{ vars.TS_AUDIENCE }}
+        run: |
+          for key in KUBE_CONFIG TS_CLIENT_ID TS_AUDIENCE; do
+            [[ -n "${!key}" && "${!key}" != *REPLACE_* ]] || { echo "Missing configuration: $key" >&2; exit 1; }
+          done
+          umask 077
+          file="$RUNNER_TEMP/fieldwork-operations-kubeconfig"
+          printf '%s\n' "$KUBE_CONFIG" > "$file"
+          echo "KUBECONFIG=$file" >> "$GITHUB_ENV"
+      - uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ vars.TS_CLIENT_ID }}
+          audience: ${{ vars.TS_AUDIENCE }}
+          tags: tag:github-deployer
+          version: latest
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.36.5
+      - name: Deploy release using existing configuration and wait for rollout
+        run: bash .github/scripts/app-deploy.sh
+      - name: Remove runner Kubernetes credentials
+        if: always()
+        run: rm -f -- "$RUNNER_TEMP/fieldwork-operations-kubeconfig"
+      # tailscale/github-action logs out its temporary node in its post-job cleanup.

@@ -43,6 +43,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        globIgnores: ["**/config.json"],
+        navigateFallbackDenylist: [/^\/config\.json$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
