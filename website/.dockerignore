@@ -5,8 +5,7 @@ dist
 dist-ssr
 .env
 .env.*
-!.env.example
-!.env.production
+!.env
 *.log
 .vscode
 .idea

@@ -100,13 +100,9 @@ The project `.npmrc` already defines the `@saintrelion` package registry.
 
 Create or select a Firebase project with a Web App and Cloud Firestore database.
 
-Create a local `.env` from the provided `.env.example`:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Fill in `.env` using your Firebase Web App configuration.
+The committed `website/.env` contains only the public Firebase Web App
+configuration. Vite reads it for local development and image builds. Keep
+private credentials out of this file.
 
 ### 3. Install dependencies
 
@@ -141,8 +137,7 @@ GitHub: https://github.com/SaintRelion
 Production runs at https://fieldwork-operations.srecosystem.space. GitHub builds
 the website image; Kubernetes serves it with two replicas behind Traefik and the
 shared Cloudflare tunnel. Public Firebase web-app settings are committed in
-website/.env.production and included at image build time. The local website/.env
-remains ignored. Changing production settings requires a new
+website/.env and included at image build time. Changing those settings requires a new
 image; Kubernetes does not mount a browser config file. See
 [GITHUB_SETUP.md](GITHUB_SETUP.md) and the private kubernetes/README.md for
 the step-by-step server setup.
