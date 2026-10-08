@@ -140,6 +140,21 @@ GitHub: https://github.com/SaintRelion
 
 Production runs at https://fieldwork-operations.srecosystem.space. GitHub builds
 the website image; Kubernetes serves it with two replicas behind Traefik and the
-shared Cloudflare tunnel. Firebase settings are a runtime ConfigMap, rather than
-Docker build arguments. Docker Compose is removed. See [GITHUB_SETUP.md](GITHUB_SETUP.md)
-and the private kubernetes/README.md for the step-by-step server setup.
+shared Cloudflare tunnel. Public Firebase web-app settings are committed in
+website/.env.production and included at image build time. The local website/.env
+remains ignored. Changing production settings requires a new
+image; Kubernetes does not mount a browser config file. See
+[GITHUB_SETUP.md](GITHUB_SETUP.md) and the private kubernetes/README.md for
+the step-by-step server setup.
+
+For a local image build test, set SR_REACT_GITHUB_TOKEN to a GitHub Packages
+read token, then run:
+
+```powershell
+docker compose --profile image up -d --build
+```
+
+The site opens at http://localhost:8081. The profile is intentional, so a plain
+docker compose up does not start the website. Stop the test with
+docker compose --profile image down. The package token is a build secret, not
+part of website/.env or the final image.

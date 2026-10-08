@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+!website/.env.production
 **/node_modules/
 **/dist/
 **/dist-ssr/

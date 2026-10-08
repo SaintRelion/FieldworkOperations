@@ -10,6 +10,8 @@ and TS_AUDIENCE. Use a separate Tailscale federated credential for
 SaintRelion/FieldworkOperations and environment production; match its actual
 GitHub OIDC subject if your account uses a custom subject format.
 The workflow uses tag:github-deployer. No FRONTEND_ENV GitHub secret is needed.
+The public Firebase web-app values live in committed website/.env.production and are baked
+into the image by Vite. Keep private credentials out of that file.
 
 Default published image: ghcr.io/saintrelion/fieldwork-operations-website:FULL_SHA.
 Optional variable WEBSITE_IMAGE_NAME overrides the repository name.
