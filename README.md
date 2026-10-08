@@ -100,13 +100,9 @@ The project `.npmrc` already defines the `@saintrelion` package registry.
 
 Create or select a Firebase project with a Web App and Cloud Firestore database.
 
-Create a local `.env` from the provided `.env.example`:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Fill in `.env` using your Firebase Web App configuration.
+The committed `website/.env` contains only the public Firebase Web App
+configuration. Vite reads it for local development and image builds. Keep
+private credentials out of this file.
 
 ### 3. Install dependencies
 
@@ -140,6 +136,20 @@ GitHub: https://github.com/SaintRelion
 
 Production runs at https://fieldwork-operations.srecosystem.space. GitHub builds
 the website image; Kubernetes serves it with two replicas behind Traefik and the
-shared Cloudflare tunnel. Firebase settings are a runtime ConfigMap, rather than
-Docker build arguments. Docker Compose is removed. See [GITHUB_SETUP.md](GITHUB_SETUP.md)
-and the private kubernetes/README.md for the step-by-step server setup.
+shared Cloudflare tunnel. Public Firebase web-app settings are committed in
+website/.env and included at image build time. Changing those settings requires a new
+image; Kubernetes does not mount a browser config file. See
+[GITHUB_SETUP.md](GITHUB_SETUP.md) and the private kubernetes/README.md for
+the step-by-step server setup.
+
+For a local image build test, set SR_REACT_GITHUB_TOKEN to a GitHub Packages
+read token, then run:
+
+```powershell
+docker compose --profile image up -d --build
+```
+
+The site opens at http://localhost:8081. The profile is intentional, so a plain
+docker compose up does not start the website. Stop the test with
+docker compose --profile image down. The package token is a build secret, not
+part of website/.env or the final image.

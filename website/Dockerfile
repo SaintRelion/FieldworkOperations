@@ -17,8 +17,6 @@ RUN --mount=type=secret,id=sr_react_github_token \
     pnpm config delete --global "//npm.pkg.github.com/:_authToken"
 
 COPY . .
-
-# Firebase config is mounted by Kubernetes at runtime, not baked into the image.
 RUN pnpm build
 
 # Lightweight static production image.

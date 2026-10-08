@@ -1,0 +1,15 @@
+name: fieldwork-operations-local
+
+services:
+  website:
+    profiles: [image]
+    build:
+      context: ./website
+      secrets:
+        - sr_react_github_token
+    ports:
+      - "127.0.0.1:8081:80"
+
+secrets:
+  sr_react_github_token:
+    environment: SR_REACT_GITHUB_TOKEN

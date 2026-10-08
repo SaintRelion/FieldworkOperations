@@ -1,12 +1,20 @@
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  if (command === "build") {
+    const env = loadEnv(mode, process.cwd(), "VITE_FIREBASE_");
+    const required = ["VITE_FIREBASE_API_KEY", "VITE_FIREBASE_AUTH_DOMAIN", "VITE_FIREBASE_PROJECT_ID", "VITE_FIREBASE_APP_ID"];
+    const missing = required.filter((key) => !env[key]);
+    if (missing.length) throw new Error(`Missing Firebase build configuration: ${missing.join(", ")}`);
+  }
+
+  return {
   plugins: [
     react(),
     tailwindcss(),
@@ -43,8 +51,6 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globIgnores: ["**/config.json"],
-        navigateFallbackDenylist: [/^\/config\.json$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
@@ -76,4 +82,5 @@ export default defineConfig({
     //   protocol: "wss", // websocket protocol
     // },
   },
+  };
 });
