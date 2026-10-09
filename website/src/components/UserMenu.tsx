@@ -1,5 +1,5 @@
 import { LogOut } from "lucide-react";
-import { useAuth } from "@saintrelion/auth-lib";
+import { useAuth } from "@/lib/AuthProvider";
 
 export default function UserMenu() {
   const auth = useAuth();

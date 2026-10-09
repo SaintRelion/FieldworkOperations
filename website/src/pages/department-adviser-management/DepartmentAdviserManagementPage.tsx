@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { RegisterDialog } from "@/components/RegisterUserDialog";
 import { toast } from "@saintrelion/notifications";
 import { Department } from "@/model_types/department";

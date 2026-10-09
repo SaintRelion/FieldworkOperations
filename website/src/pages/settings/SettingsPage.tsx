@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
 import type { CreateSettings, Settings } from "@/models/Settings";
 import type { User } from "@/models/User";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import { Department } from "@/model_types/department";
 import { toast } from "@saintrelion/notifications";

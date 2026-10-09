@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import ViewAttendancePopup from "@/components/ViewAttendancePopup";
 import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import { formatReadableDate, formatReadableDateTime, toDate } from "@saintrelion/time-functions";
 import { ArrowUpRight, CalendarDays, ImageOff } from "lucide-react";

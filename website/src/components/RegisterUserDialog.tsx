@@ -1,4 +1,4 @@
-import { useAuth } from "@saintrelion/auth-lib";
+import { useAuth } from "@/lib/AuthProvider";
 import { Department } from "@/model_types/department";
 import {
   RenderForm,
@@ -16,6 +16,7 @@ import {
 import type { CreateInternInfo } from "@/models/InternInfo";
 import { Plus, UserCircle, Briefcase, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@saintrelion/notifications";
 
 interface RegisterDialogProps {
   role: "intern" | "departmentadviser";
@@ -25,6 +26,7 @@ interface RegisterDialogProps {
 export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
   const auth = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   const { useInsert: insertInternInfo } = useResourceLocked<
     never,
@@ -37,9 +39,12 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
     if (
       !data.firstName?.trim() ||
       !data.lastName?.trim() ||
-      !data.email?.trim()
+      !data.email?.trim() ||
+      !data.username?.trim() ||
+      !data.department ||
+      !(data.department in Department)
     ) {
-      setError("Names and Email cannot be empty.");
+      setError("Enter a name, username, email, and department.");
       return;
     }
 
@@ -60,21 +65,30 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
       }
     }
 
-    const userId = await auth.register(
-      { ...data, isEnabled: true, roles: [role], role: role },
-      data.password,
-    );
-
-    if (role === "intern" && userId) {
-      await insertInternInfo.run({
-        userId: userId,
-        remainingHours: data.requiredHours.toString(),
-        accomplished: false,
-        requiredHours: data.requiredHours,
-        trainingCompany: data.trainingCompany,
-        unexcusedAbsences: "0",
-        tardinessCount: "0",
-      });
+    try {
+      const userId = await auth.register({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        username: data.username,
+        email: data.email,
+        department: data.department as keyof typeof Department,
+        role,
+      }, data.password);
+      if (role === "intern") {
+        await insertInternInfo.run({
+          userId,
+          remainingHours: data.requiredHours.toString(),
+          accomplished: false,
+          requiredHours: data.requiredHours,
+          trainingCompany: data.trainingCompany,
+          unexcusedAbsences: "0",
+          tardinessCount: "0",
+        });
+      }
+      toast.success("Account created");
+      setOpen(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Account creation failed.");
     }
   };
 
@@ -84,7 +98,7 @@ export const RegisterDialog = ({ role, triggerLabel }: RegisterDialogProps) => {
     "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500";
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className="flex items-center gap-2 border border-[#1677ff] bg-[#1677ff] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(22,119,255,0.16)] transition-all hover:bg-[#0864db] active:translate-y-px">
           <Plus className="h-4 w-4 stroke-[3]" />

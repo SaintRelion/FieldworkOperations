@@ -11,7 +11,7 @@ import {
   Filter,
   Search,
 } from "lucide-react";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { UpdateUser, User } from "@/models/User";
 import type { InternInfo } from "@/models/InternInfo";

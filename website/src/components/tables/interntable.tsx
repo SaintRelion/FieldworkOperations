@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import type { InternInfo } from "@/models/InternInfo";
 import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
