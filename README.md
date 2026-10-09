@@ -1,151 +1,93 @@
 # Fieldwork Operations
 
-Fieldwork Operations is a role-based On-the-Job Training (OJT) attendance and management system built for **administrators, department advisers, and interns**. It covers attendance, OJT-hour tracking, evaluations, accomplishments, reports, and account management.
+Fieldwork Operations helps internship programs keep daily attendance, training hours, and work evidence in one place. Interns record a four-step shift and accomplishments; department advisers review attendance and progress; administrators manage accounts and assignments. June Aurelius Jacinto was the full-stack developer for the client project and its reengineered portfolio edition.
 
-> **Project status:** Archived portfolio project. It retains selected `@saintrelion/*` data and UI libraries; authentication and routing use Firebase Authentication and React Router directly.
+## Portfolio edition and demo
 
-## Key features
+**Client project · Reengineered portfolio edition**
 
-- **Four-step attendance** â€” interns follow `Time In â†’ Break Out â†’ Break In â†’ Time Out`.
-- **Location-aware attendance** â€” attendance can include timestamps, geolocation information, and captured images depending on permissions and workflow.
-- **OJT-hour tracking** â€” tracks accumulated internship hours and progress.
-- **Accomplishments and reports** â€” interns can maintain accomplishment records and DTR/report workflows.
-- **Adviser workflows** â€” department advisers can monitor attendance, evaluate records, manage assigned interns, configure attendance settings, and track progress.
-- **Administration** â€” administrators manage department advisers, interns, and accounts.
-- **Role-based access** â€” separate workflows for administrators, department advisers, and interns.
+The client permitted a public portfolio presentation provided the school was not named or visually recognizable. The original system covered these same core workflows and was deployed locally on the school's purchased server. This edition uses generalized Fieldwork Operations branding and fictional demonstration records. Later UI, authentication, attendance, and deployment changes in this repository describe the portfolio edition, not necessarily what the client received. No client identity or installation URL is published here.
 
-## Screenshots
+The portfolio deployment is configured for [Open portfolio demo](https://fieldwork-operations.srecosystem.space), on the developer's infrastructure rather than the client's installation. Availability and public access have not been independently verified for this README update. The self-contained previews below work without that deployment.
 
-> Screenshots can be added from a restored/demo environment using synthetic or authorized data.
+## Original delivery and constraints
 
-<!-- Suggested screenshots:
-1. Intern dashboard / attendance
-2. Four-step attendance workflow
-3. Adviser dashboard
-4. OJT hours / progress
-5. DTR or reports
-6. Admin account management
--->
+The client needed an OJT system for intern attendance and adviser oversight. The delivered system covered the same core attendance, intern management, accomplishment, and reporting workflows represented here, running on the school's own local server. Requirements changed during development: an initially local-LAN direction moved toward Firebase. Meeting that change led to a quickly patched authentication approach while the core workflows remained the priority. The limitation was a custom credential flow that was harder to reason about and maintain. In this portfolio edition, Firebase Authentication now owns credentials and sessions, with Firestore keeping only application profile data. This was a response to changing architecture needs, not a claim that the client was at fault or that a deadline forced the decision.
 
-## Technology stack
+## Selected workflows
 
-- React 19 + TypeScript
-- Vite
-- Firebase Authentication / Firestore
-- TanStack Query
-- Tailwind CSS
-- Leaflet
-- Vite PWA
-- pnpm
-- Private `@saintrelion/*` libraries
+The previews use fictional records and model the interaction; they do not connect to Firebase or perform real attendance, review, or reporting actions.
 
-## Data access architecture
+<!-- portfolio:showcase:start -->
 
-Fieldwork Operations uses the **Firebase Client SDK** through the SaintRelion data-access library for Firestore queries and mutations. Firebase Authentication owns credentials and sessions. `ojt_User/{uid}` contains only application profile information, not passwords or password hashes.
+<!-- portfolio:feature shift-capture -->
+## Record a four-step shift
 
-The library architecture separates the application from the underlying data provider. In addition to Firebase, it supported a **local mock provider** for local development and a **generic REST API provider** for deployments backed by a separate server/API.
+An intern moves through Time in, Break out, Break in, and Time out in order. The application captures a photo and coordinates with each entry, shows camera-permission feedback, and displays the next available step and recent records. The preview simulates the sequence and permission feedback; it does not request camera or location access. The current client-side sequence is a UI workflow, not proof of server-enforced ordering.
 
-Deploy and test the repository's `firestore.rules` before using this app. React route guards only control navigation; Firestore Security Rules enforce data access.
+<!-- portfolio:preview showcase_html/shift-capture.html -->
 
-## Access to private dependencies
+<!-- portfolio:feature daily-time-record -->
+## Build a daily time record
 
-This project depends on private `@saintrelion/*` packages. Required access tokens are **not included in the repository**.
+An intern selects a date range and previews a monthly DTR populated from existing Time in, Break out, Break in, and Time out entries. Each month gets its own form; an unrecorded weekend is labeled, while a recorded weekend shift keeps its times. The application offers a two-copy print layout. The preview lets you change the range and inspect sample rows, but does not print or produce an official record; missing entries remain blank rather than being inferred.
 
-Contact the developer for the package access required to build the archived project.
+<!-- portfolio:preview showcase_html/daily-time-record.html -->
 
+<!-- portfolio:feature attendance-review -->
+## Review attendance outcomes
 
-## First administrator
+A department adviser inspects dated captures for assigned interns and marks entry records verified, tardy, excused, or absent. Late entries are flagged against department shift settings; the chosen outcome also affects remaining hours and penalty counts. The UI asks for confirmation before applying an outcome. The preview shows the decision and resulting status using fixed fictional data, without writing to a database. The current update path is client-orchestrated, so it should not be described as an atomic payroll or compliance process.
 
-A fresh project has no administrator. In the Firebase console, enable the Email/Password sign-in provider and create the first user in Authentication. Copy that user's UID, then create a Firestore document at `ojt_User/{uid}` with at least `id` set to the same UID, `email`, `firstName`, `lastName`, `username`, `department`, `role: "admin"`, `roles: ["admin"]`, and `isEnabled: true`. Deploy `firestore.rules` before signing in. There is deliberately no public first-admin creation route.
+<!-- portfolio:preview showcase_html/attendance-review.html -->
 
-Sign in through the shared portal using the Firebase Auth email and password:
+<!-- portfolio:feature accomplishment-log -->
+## Keep a dated work log
 
-```text
-/login
-```
+An intern adds a dated description of completed training work, optionally with a photo, then can generate a date-filtered accomplishment report from this tab. A description and date are required; the real form offers camera capture or file upload and explains when camera access fails. The preview demonstrates entry validation and report filtering with fictional content, without storing files or generating an official report.
 
-Administrators, department advisers, and interns all use `/login`. The app loads the signed-in user's matching Firestore profile and routes by role.
+<!-- portfolio:preview showcase_html/accomplishment-log.html -->
 
-From the Admin workspace, department adviser accounts can be registered. Department advisers register interns for their department.
+<!-- portfolio:showcase:end -->
 
-Administrators create additional Firebase Auth accounts and profile documents from the admin workspace. Deleting a profile document does not delete its Firebase Auth account; remove the corresponding Auth account in the Firebase console when permanently deprovisioning a user. Existing legacy Firestore password documents cannot be used to sign in and should not be retained as a credential store.
+## Engineering changes in this edition
 
-## Local development
+The current source uses a redesigned Fieldwork Operations interface across the portal and role-specific workspaces. Firebase Authentication now owns sign-in, sessions, password changes, and account creation; `ojt_User/{uid}` retains application profile and role data rather than password hashes. The intern attendance page refreshes after a recorded step, and attendance history derives visible outcomes from reviewed records. DTR rows map existing attendance by date and step. These are verifiable properties of the current code, not claims about the original client release or completed external testing.
 
-Use this setup when running or modifying Fieldwork Operations directly instead of using Docker.
+The repository also has a structured development and deployment workflow: a local Vite server, a Docker image build, GitHub Actions checks and image publication, and a Kubernetes rollout. This describes the implemented workflow, not a claim of production readiness.
 
-### Requirements
+## Decisions and tradeoffs
 
-- Node.js 22
-- pnpm / Corepack
-- Git
-- A Firebase project
-- Access to the private `@saintrelion/*` packages
+React, Vite, and the Firebase client SDK keep this edition browser-delivered without an application server. The shift from an initial local-LAN direction to Firebase changed the identity and data-access assumptions. Firestore holds OJT records, while Firebase Authentication holds credentials. That separation removes the earlier browser-side password-hash document flow, but profile creation still couples an Auth account with a Firestore document and needs careful failure handling. Firestore Security Rules are the data boundary; route guards are only navigation controls. Rules must be deployed and tested separately from the website image.
 
-### 1. Configure private package access
+The private `@saintrelion/*` data and UI packages reduce duplicated app code, but access to them is required for a fresh install or image build. The data-access library retains provider abstractions, although this application's current configuration selects Firebase. A next iteration should evaluate whether those abstractions still earn their maintenance cost. Attendance evaluation currently coordinates record and hour updates in the browser; transactional or server-owned updates would be worth revisiting before relying on it for high-stakes records.
 
-The project uses private `@saintrelion/*` packages hosted on GitHub Packages. Configure authentication using the credential provided by the developer:
+## Architecture and release lifecycle
 
-```powershell
-pnpm config set --global "//npm.pkg.github.com/:_authToken" "YOUR_TOKEN"
-```
+The React frontend reads and writes Firestore through the SaintRelion data-access layer and uses Firebase Authentication for identity. There is no Django or other application API in this repository, and no SQL database or migration job. Local development uses `pnpm dev` inside `website/`. The main-branch workflow checks build inputs and deployment-script syntax, then builds and publishes a commit-SHA website image and invokes a production Kubernetes rollout. Those checks do **not** run frontend tests or lint. A separate workflow can deploy an already published commit. There is no staging environment in the checked-in workflow. Firebase rules have their own `firebase.json` configuration and are not deployed by the website release workflow.
 
-The project `.npmrc` already defines the `@saintrelion` package registry.
+The documented hosting path is Kubernetes behind Traefik and a shared Cloudflare tunnel. The private server manifests are not included in this public repository. Browser-visible Firebase configuration is built into the image; changing it requires a new build.
 
-### 2. Configure Firebase
+## Known limitations
 
-Create or select a Firebase project with a Web App and Cloud Firestore database.
+- The first administrator must be provisioned in Firebase Authentication and `ojt_User` manually; there is no public setup-admin route.
+- Creating additional Auth users and Firestore profiles is coordinated in the browser. Removing a profile does not remove its Auth account.
+- Attendance review and remaining-hour updates are separate client-driven operations, not one transaction. The UI's shift order is likewise not a security rule.
+- The release validation workflow does not run the app's test suite or lint, and this repository has no staging workflow.
+- Building from source requires access to private packages. The public HTML previews are illustrative only.
 
-The committed `website/.env` contains only the public Firebase Web App
-configuration. Vite reads it for local development and image builds. Keep
-private credentials out of this file.
+## Getting started
 
-### 3. Install dependencies
+You need Node.js 22, pnpm/Corepack, a Firebase project, and authorized access to the private `@saintrelion/*` packages. The committed `website/.env` contains public Firebase Web App settings only; choose a separate Firebase project before testing against anything sensitive. From `website/`:
 
 ```powershell
 corepack enable
 pnpm install
-```
-
-### 4. Start the development server
-
-```powershell
 pnpm dev
 ```
 
-Open the URL printed by Vite. The restored local configuration may use:
-
-```text
-http://localhost:5174
-```
-
-For a fresh Firestore database, complete the **First administrator** setup above.
+Vite is configured for port 5174. Deploy and test [Firestore Security Rules](firestore.rules) before using real records; the frontend alone does not enforce data access. First-admin provisioning, package access, release configuration, and image-build instructions are in [GITHUB_SETUP.md](GITHUB_SETUP.md). A plain `docker compose up` does not start the website; the image-build test uses the opt-in `image` profile.
 
 ## Author
 
-**June Aurelius Jacinto**  
-Full-Stack Software Developer
-
-GitHub: https://github.com/SaintRelion
-
-## Kubernetes deployment
-
-Production runs at https://fieldwork-operations.srecosystem.space. GitHub builds
-the website image; Kubernetes serves it with two replicas behind Traefik and the
-shared Cloudflare tunnel. Public Firebase web-app settings are committed in
-website/.env and included at image build time. Changing those settings requires a new
-image; Kubernetes does not mount a browser config file. See
-[GITHUB_SETUP.md](GITHUB_SETUP.md) and the private kubernetes/README.md for
-the step-by-step server setup.
-
-For a local image build test, set SR_REACT_GITHUB_TOKEN to a GitHub Packages
-read token, then run:
-
-```powershell
-docker compose --profile image up -d --build
-```
-
-The site opens at http://localhost:8081. The profile is intentional, so a plain
-docker compose up does not start the website. Stop the test with
-docker compose --profile image down. The package token is a build secret, not
-part of website/.env or the final image.
+**June Aurelius Jacinto** · Full-Stack Software Developer · [GitHub](https://github.com/SaintRelion)
