@@ -2,7 +2,7 @@
 
 Fieldwork Operations is a role-based On-the-Job Training (OJT) attendance and management system built for **administrators, department advisers, and interns**. It covers attendance, OJT-hour tracking, evaluations, accomplishments, reports, and account management.
 
-> **Project status:** Archived portfolio project. This version uses an older generation of my `@saintrelion/*` libraries, which are now deprecated.
+> **Project status:** Archived portfolio project. It retains selected `@saintrelion/*` data and UI libraries; authentication and routing use Firebase Authentication and React Router directly.
 
 ## Key features
 
@@ -31,7 +31,7 @@ Fieldwork Operations is a role-based On-the-Job Training (OJT) attendance and ma
 
 - React 19 + TypeScript
 - Vite
-- Firebase / Firestore
+- Firebase Authentication / Firestore
 - TanStack Query
 - Tailwind CSS
 - Leaflet
@@ -41,11 +41,11 @@ Fieldwork Operations is a role-based On-the-Job Training (OJT) attendance and ma
 
 ## Data access architecture
 
-Fieldwork Operations uses the **Firebase Client SDK** through the SaintRelion data-access libraries. Firebase was used as the provider for this version because it allowed the application and its workflows to be developed quickly without requiring a separate backend API during development.
+Fieldwork Operations uses the **Firebase Client SDK** through the SaintRelion data-access library for Firestore queries and mutations. Firebase Authentication owns credentials and sessions. `ojt_User/{uid}` contains only application profile information, not passwords or password hashes.
 
 The library architecture separates the application from the underlying data provider. In addition to Firebase, it supported a **local mock provider** for local development and a **generic REST API provider** for deployments backed by a separate server/API.
 
-Firebase can also be used for a production deployment, but it should be configured with appropriately restrictive **Firestore Security Rules and authentication controls** rather than permissive development rules.
+Deploy and test the repository's `firestore.rules` before using this app. React route guards only control navigation; Firestore Security Rules enforce data access.
 
 ## Access to private dependencies
 
@@ -56,23 +56,19 @@ Contact the developer for the package access required to build the archived proj
 
 ## First administrator
 
-A fresh Firestore database has no Fieldwork Operations users. Use the temporary restoration route:
+A fresh project has no administrator. In the Firebase console, enable the Email/Password sign-in provider and create the first user in Authentication. Copy that user's UID, then create a Firestore document at `ojt_User/{uid}` with at least `id` set to the same UID, `email`, `firstName`, `lastName`, `username`, `department`, `role: "admin"`, `roles: ["admin"]`, and `isEnabled: true`. Deploy `firestore.rules` before signing in. There is deliberately no public first-admin creation route.
 
-```text
-/setup-admin
-```
-
-Create the first administrator, then sign in through the shared portal:
+Sign in through the shared portal using the Firebase Auth email and password:
 
 ```text
 /login
 ```
 
-Administrators, department advisers, and interns all use `/login`. After authentication, the role-based router sends each user to the appropriate workspace.
+Administrators, department advisers, and interns all use `/login`. The app loads the signed-in user's matching Firestore profile and routes by role.
 
-From the Admin workspace, department adviser and intern accounts can then be registered.
+From the Admin workspace, department adviser accounts can be registered. Department advisers register interns for their department.
 
-Remove or disable `/setup-admin` after initializing the database.
+Administrators create additional Firebase Auth accounts and profile documents from the admin workspace. Deleting a profile document does not delete its Firebase Auth account; remove the corresponding Auth account in the Firebase console when permanently deprovisioning a user. Existing legacy Firestore password documents cannot be used to sign in and should not be retained as a credential store.
 
 ## Local development
 

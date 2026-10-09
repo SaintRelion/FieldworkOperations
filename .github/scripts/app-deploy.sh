@@ -12,7 +12,6 @@ server=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}
 printf '%s' "$server" | python -c 'import ipaddress,sys; from urllib.parse import urlparse; u=urlparse(sys.stdin.read()); assert u.scheme == "https" and u.port == 6443 and ipaddress.ip_address(u.hostname) in ipaddress.ip_network("100.64.0.0/10"), "Use private Tailscale Kubernetes API"'
 [[ $(kubectl config view --minify -o jsonpath='{.contexts[0].context.namespace}') == "$namespace" ]]
 kubectl -n "$namespace" get deployment website >/dev/null
-kubectl -n "$namespace" get configmap fieldwork-operations-web-config >/dev/null
 [[ "$WEBSITE_IMAGE_NAME" =~ ^ghcr.io/[a-z0-9_./-]+$ ]]
 digest=$(docker buildx imagetools inspect "$WEBSITE_IMAGE_NAME:$RELEASE_SHA" | awk '$1 == "Digest:" && !found { print $2; found=1 }')
 [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]

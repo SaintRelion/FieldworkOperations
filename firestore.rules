@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profilePath() {
+      return /databases/$(database)/documents/ojt_User/$(request.auth.uid);
+    }
+
+    function active() {
+      return signedIn() && exists(profilePath()) && get(profilePath()).data.isEnabled == true;
+    }
+
+    function role() {
+      return get(profilePath()).data.role;
+    }
+
+    function isAdmin() {
+      return active() && role() == 'admin';
+    }
+
+    function isAdviser() {
+      return active() && role() == 'departmentadviser';
+    }
+
+    function isStaff() {
+      return isAdmin() || isAdviser();
+    }
+
+    function sameDepartment(userId) {
+      return get(/databases/$(database)/documents/ojt_User/$(userId)).data.department == get(profilePath()).data.department;
+    }
+
+    match /ojt_User/{userId} {
+      allow get: if active() && (request.auth.uid == userId || isStaff());
+      allow list: if isStaff();
+      allow create: if (isAdmin() || (isAdviser()
+          && request.resource.data.role == 'intern'
+          && request.resource.data.department == get(profilePath()).data.department))
+        && request.resource.data.id == userId
+        && request.resource.data.role in ['intern', 'departmentadviser']
+        && request.resource.data.roles == [request.resource.data.role]
+        && !request.resource.data.keys().hasAny(['passwordHash', 'salt']);
+      allow update: if isAdmin() || (
+        isAdviser() && resource.data.role == 'intern'
+        && resource.data.department == get(profilePath()).data.department
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isEnabled', 'department', 'updatedAt'])
+      ) || (
+        active() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstName', 'lastName', 'updatedAt'])
+      );
+      allow delete: if isAdmin() || (isAdviser() && resource.data.role == 'intern'
+        && resource.data.department == get(profilePath()).data.department);
+    }
+
+    match /ojt_InternInfo/{recordId} {
+      allow read: if isStaff() || (active() && resource.data.userId == request.auth.uid);
+      allow create: if (isAdmin() || (isAdviser() && sameDepartment(request.resource.data.userId)))
+        && request.resource.data.userId is string;
+      allow update: if isAdmin() || (
+        isAdviser() && sameDepartment(resource.data.userId)
+      ) || (
+        active() && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trainingCompany', 'updatedAt'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /ojt_Attendance/{recordId} {
+      allow read: if isStaff() || (active() && resource.data.userId == request.auth.uid);
+      allow create: if active() && (
+        (role() == 'intern' && request.resource.data.userId == request.auth.uid
+          && request.resource.data.evaluated == false
+          && request.resource.data.attribute == '')
+        || (isAdviser() && sameDepartment(request.resource.data.userId))
+      );
+      allow update: if isAdviser() && sameDepartment(resource.data.userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attribute', 'evaluated', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    match /ojt_Accomplishments/{recordId} {
+      allow read: if isStaff() || (active() && resource.data.userId == request.auth.uid);
+      allow create: if active() && role() == 'intern' && request.resource.data.userId == request.auth.uid;
+      allow update: if active() && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if active() && resource.data.userId == request.auth.uid;
+    }
+
+    match /ojt_Settings/{recordId} {
+      allow read: if active();
+      allow create: if isAdmin() || (isAdviser() && request.resource.data.department == get(profilePath()).data.department);
+      allow update: if isAdmin() || (isAdviser()
+        && resource.data.department == get(profilePath()).data.department
+        && request.resource.data.department == resource.data.department);
+      allow delete: if isAdmin();
+    }
+
+    match /ojt_OjtYearlyDateRange/{recordId} {
+      allow read: if active();
+      allow write: if isAdmin();
+    }
+
+    match /ojt_Notification/{recordId} {
+      allow read: if isStaff() || (active() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+  }
+}
