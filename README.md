@@ -42,7 +42,7 @@ A department adviser inspects dated captures for assigned interns and marks entr
 <!-- portfolio:preview showcase_html/attendance-review.html -->
 
 <!-- portfolio:feature accomplishment-log -->
-## Keep a dated work log
+## Keep a dated work logs
 
 An intern adds a dated description of completed training work, optionally with a photo, then can generate a date-filtered accomplishment report from this tab. A description and date are required; the real form offers camera capture or file upload and explains when camera access fails. The preview demonstrates entry validation and report filtering with fictional content, without storing files or generating an official report.
 
