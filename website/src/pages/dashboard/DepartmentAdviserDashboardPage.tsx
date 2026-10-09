@@ -4,7 +4,7 @@ import { ArrowRight, Building2, CalendarDays, Users } from "lucide-react";
 import OJTAttendanceTable from "@/components/OJTAttendanceTable";
 import type { InternInfo } from "@/models/InternInfo";
 import type { User } from "@/models/User";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import { Department } from "@/model_types/department";
 

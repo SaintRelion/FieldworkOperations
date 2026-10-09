@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { useRef, useState } from "react";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase-client";
 import type { User } from "@/models/User";
-import { useAuth, useCurrentUser } from "@saintrelion/auth-lib";
+import { useAuth, useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import type { InternInfo } from "@/models/InternInfo";
-import { db } from "@saintrelion/auth-lib/dist/lib/firebase-connection";
 import {
   RenderForm,
   RenderFormButton,
@@ -29,27 +29,6 @@ import {
   KeyRound,
   type LucideIcon,
 } from "lucide-react";
-
-async function hashPassword(password: string, salt?: string) {
-  const enc = new TextEncoder();
-  const actualSalt =
-    salt ||
-    crypto
-      .getRandomValues(new Uint8Array(16))
-      .reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-  const data = enc.encode(password + actualSalt);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return { hash: hashHex, salt: actualSalt };
-}
-
-async function verifyPassword(password: string, hash: string, salt: string) {
-  const result = await hashPassword(password, salt);
-  return result.hash === hash;
-}
 
 const inputClass =
   "w-full border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-[#1677ff] focus:outline-none";
@@ -81,12 +60,10 @@ export default function AccountPage() {
   const user = useCurrentUser<User>();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState<boolean>(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const passwordChangeInFlight = useRef(false);
 
-  const { useUpdate: updateUser } = useResourceLocked<never, never, User>(
-    "user",
-    { showToast: false },
-  );
-  const { useList: getIntern, useUpdate: updateIntern } = useResourceLocked<
+  const { useList: getIntern } = useResourceLocked<
     InternInfo,
     never,
     InternInfo
@@ -96,17 +73,14 @@ export default function AccountPage() {
   const intern = internData?.[0] || null;
 
   const handleUpdate = async (data: Record<string, string>) => {
-    const { trainingCompany, ...userData } = data;
+    const { trainingCompany, firstName, lastName } = data;
 
     // Update Core User
-    await updateUser.run({ id: user.id, payload: userData });
+    await updateDoc(doc(db, "ojt_User", user.id), { firstName, lastName, updatedAt: serverTimestamp() });
 
     // Update Intern Specifics (Removed Program)
     if (user.roles?.[0] === "intern" && intern) {
-      await updateIntern.run({
-        id: intern.id,
-        payload: { trainingCompany },
-      });
+      await updateDoc(doc(db, "ojt_InternInfo", intern.id), { trainingCompany, updatedAt: serverTimestamp() });
     }
 
     toast.success("Profile Updated");
@@ -115,28 +89,22 @@ export default function AccountPage() {
   };
 
   const handleChangePassword = async (data: Record<string, string>) => {
+    if (passwordChangeInFlight.current) return;
+    passwordChangeInFlight.current = true;
+    setIsChangingPassword(true);
     const { currentPassword, newPassword } = data;
-    const ref = doc(db, "ojt_User", user.id);
-    const snap = await getDoc(ref);
-    const userData = snap.data();
-
-    if (userData) {
-      const valid = await verifyPassword(
-        currentPassword,
-        userData.passwordHash,
-        userData.salt,
-      );
-
-      if (!valid) {
-        toast.error("Current password incorrect");
-        return;
-      }
-
-      const { hash, salt } = await hashPassword(newPassword);
-      await updateDoc(ref, { passwordHash: hash, salt });
-
+    try {
+      await auth.changePassword(currentPassword, newPassword);
       toast.success("Password updated successfully");
       setPasswordDialogOpen(false);
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+      toast.error(code === "auth/invalid-credential" || code === "auth/wrong-password"
+        ? "Current password is incorrect. Your password was not changed."
+        : error instanceof Error ? error.message : "Password update failed.");
+    } finally {
+      passwordChangeInFlight.current = false;
+      setIsChangingPassword(false);
     }
   };
 
@@ -194,12 +162,7 @@ export default function AccountPage() {
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className={labelClass}>Email Address</label>
-                    <RenderFormField
-                      field={{ type: "email", name: "email" }}
-                      defaultValue={user.email}
-                      inputClassName={inputClass}
-                    />
+                    <DisplayField label="Email Address" value={user.email} icon={Mail} />
                   </div>
                 </>
               ) : (
@@ -280,7 +243,6 @@ export default function AccountPage() {
           {isEditing && (
             <div className="flex justify-end border-t border-slate-200 pt-6">
               <RenderFormButton
-                isDisabled={updateUser.isLocked}
                 buttonLabel="Save profile"
                 buttonClassName="bg-[#1677ff] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#0864db]"
                 onSubmit={handleUpdate}
@@ -326,7 +288,8 @@ export default function AccountPage() {
               </div>
 
               <RenderFormButton
-                buttonLabel="Update Password"
+                buttonLabel={isChangingPassword ? "Updating..." : "Update Password"}
+                isDisabled={isChangingPassword}
                 buttonClassName="w-full bg-[#1677ff] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0864db]"
                 onSubmit={handleChangePassword}
               />

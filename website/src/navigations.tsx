@@ -1,154 +1,76 @@
-import {
-  createAppRouter,
-  createRoleLayout,
-  registerGroupAppRoutes,
-} from "@saintrelion/routers";
-
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "@/lib/AuthProvider";
 import NotFound from "./pages/NotFound";
-
 import SettingsPage from "./pages/settings/SettingsPage";
 import InternManagementPage from "./pages/intern-management/InternManagementPage";
 import AttendanceRecord from "./pages/attendance-record/AttendanceRecord";
 import DepartmentAdviserManagementPage from "./pages/department-adviser-management/DepartmentAdviserManagementPage";
 import LoginPage from "./pages/authentication/LoginPage";
-// import RegisterPage from "./pages/authentication/RegisterPage";
-import { roleLayoutMap } from "@saintrelion/auth-lib";
 import { DepartmentAdviserDashboard } from "./pages/dashboard/DepartmentAdviserDashboardPage";
 import InternDashboardPage from "./pages/dashboard/InternDashboardPage";
-import { PublicLayout } from "./layout/PublicLayout";
 import BaseLayout from "./layout/BaseLayout";
 import DepartmentAttendanceEvaluation from "./pages/attendance-evaluation/DepartmentAttendanceEvaluation";
 import AccountPage from "./pages/account/AccountPage";
 import OJTAccomplishments from "./pages/accomplishment/OJTAccomplishments";
-import FirstAdminSetup from "./pages/FirstAdminSetup";
 
-roleLayoutMap[""] = {
-  redirect: "/",
-  layout: PublicLayout,
-};
-registerGroupAppRoutes({
-  path: "/",
-  layout: createRoleLayout(""),
-  errorElement: <NotFound />,
-  children: [
-    { path: "login", auth: true, element: <LoginPage /> },
-    // { path: "register", auth: true, element: <RegisterPage /> },
-    {
-      path: "/setup-admin",
-      auth: true,
-      element: <FirstAdminSetup />,
-    },
-  ],
-});
-
-roleLayoutMap["admin"] = {
-  redirect: "/admin",
-  layout: BaseLayout,
-};
-registerGroupAppRoutes({
-  path: "/admin",
-  layout: createRoleLayout("admin"),
-  errorElement: <NotFound />,
-  children: [
-    {
-      index: true,
-      element: <DepartmentAdviserManagementPage />,
-      label: "Department Advisers",
-      allowedRoles: ["admin"],
-    },
-    {
-      path: "interns",
-      element: <InternManagementPage />,
-      label: "Interns",
-      allowedRoles: ["admin"],
-    },
-    {
-      path: "account",
-      element: <AccountPage />,
-      label: "Account",
-      allowedRoles: ["admin"],
-    },
-  ],
-});
-
-roleLayoutMap["departmentadviser"] = {
-  redirect: "/departmentadviser",
-  layout: BaseLayout,
-};
-registerGroupAppRoutes({
-  path: "/departmentadviser",
-  layout: createRoleLayout("departmentadviser"),
-  errorElement: <NotFound />,
-  children: [
-    {
-      index: true,
-      element: <DepartmentAdviserDashboard />,
-      label: "Dashboard",
-      allowedRoles: ["departmentadviser"],
-    },
-    {
-      path: "interns",
-      element: <InternManagementPage />,
-      label: "Interns",
-      allowedRoles: ["departmentadviser"],
-    },
-    {
-      path: "attendance",
-      element: <DepartmentAttendanceEvaluation />,
-      label: "Attendance",
-      allowedRoles: ["departmentadviser"],
-    },
-    {
-      path: "account",
-      element: <AccountPage />,
-      label: "Account",
-      allowedRoles: ["departmentadviser"],
-    },
-    {
-      path: "settings",
-      element: <SettingsPage />,
-      label: "Settings",
-      allowedRoles: ["departmentadviser"],
-    },
-  ],
-});
-
-roleLayoutMap["intern"] = {
-  redirect: "/intern",
-  layout: BaseLayout,
+const homeByRole: Record<string, string> = {
+  admin: "/admin",
+  departmentadviser: "/departmentadviser",
+  intern: "/intern",
 };
 
-registerGroupAppRoutes({
-  path: "/intern",
-  layout: createRoleLayout("intern"),
-  errorElement: <NotFound />,
-  children: [
-    {
-      index: true,
-      element: <InternDashboardPage />,
-      label: "Dashboard",
-      allowedRoles: ["intern"],
-    },
-    {
-      path: "attendancerecord",
-      element: <AttendanceRecord />,
-      label: "Attendance Record",
-      allowedRoles: ["intern"],
-    },
+function Home() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return <Navigate to={user ? homeByRole[user.roles?.[0]] ?? "/login" : "/login"} replace />;
+}
 
-    {
-      path: "accomplishment",
-      element: <OJTAccomplishments />,
-      label: "Accomplishments",
-      allowedRoles: ["intern"],
-    },
-    {
-      path: "account",
-      element: <AccountPage />,
-      label: "Account",
-      allowedRoles: ["intern"],
-    },
-  ],
-});
+function GuestOnly() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to={homeByRole[user.roles?.[0]] ?? "/"} replace /> : <Outlet />;
+}
 
-export const router = createAppRouter();
+function RoleOnly({ role }: { role: string }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.roles?.[0] !== role) return <Navigate to={homeByRole[user.roles?.[0]] ?? "/login"} replace />;
+  return <BaseLayout />;
+}
+
+export const router = createBrowserRouter([
+  { path: "/", element: <Home /> },
+  { element: <GuestOnly />, children: [{ path: "/login", element: <LoginPage /> }] },
+  {
+    path: "/admin",
+    element: <RoleOnly role="admin" />,
+    children: [
+      { index: true, element: <DepartmentAdviserManagementPage /> },
+      { path: "interns", element: <InternManagementPage /> },
+      { path: "account", element: <AccountPage /> },
+    ],
+  },
+  {
+    path: "/departmentadviser",
+    element: <RoleOnly role="departmentadviser" />,
+    children: [
+      { index: true, element: <DepartmentAdviserDashboard /> },
+      { path: "interns", element: <InternManagementPage /> },
+      { path: "attendance", element: <DepartmentAttendanceEvaluation /> },
+      { path: "account", element: <AccountPage /> },
+      { path: "settings", element: <SettingsPage /> },
+    ],
+  },
+  {
+    path: "/intern",
+    element: <RoleOnly role="intern" />,
+    children: [
+      { index: true, element: <InternDashboardPage /> },
+      { path: "attendancerecord", element: <AttendanceRecord /> },
+      { path: "accomplishment", element: <OJTAccomplishments /> },
+      { path: "account", element: <AccountPage /> },
+    ],
+  },
+  { path: "*", element: <NotFound /> },
+]);

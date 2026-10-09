@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Camera, Check, MapPin } from "lucide-react";
 import type { Attendance, CreateAttendance } from "@/models/Attendance";
-import { formatReadableDateTime, getCurrentDateTimeString, isSameDay } from "@saintrelion/time-functions";
+import { formatReadableDateTime, isToday } from "@saintrelion/time-functions";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { GeoViewer } from "@/to-be-library/geo/geo-viewer";
 import { LiveClock } from "@/to-be-library/live/live-clock";
 import { CameraCapture } from "@/to-be-library/live/camera-capture";
@@ -38,8 +38,8 @@ export default function InternDashboardPage() {
   const attendance = sortByCreatedAt(attendanceQuery.data, "desc");
 
   const completedSteps = useMemo(() => {
-    const today = getCurrentDateTimeString().slice(0, 10);
-    const todaysLogs = attendance.filter((log) => isSameDay(today, log.createdAt));
+
+    const todaysLogs = attendance.filter((log) => isToday(log.createdAt));
     return steps.filter((step) => todaysLogs.some((log) => log.type === step.type)).length;
   }, [attendance]);
 

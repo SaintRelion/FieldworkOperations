@@ -10,7 +10,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { useResourceLocked } from "@saintrelion/data-access-layer";
 import {
   getCurrentDateTimeString,

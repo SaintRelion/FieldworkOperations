@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from "react";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import type { User } from "@/models/User";

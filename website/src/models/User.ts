@@ -1,8 +1,11 @@
 import type { DepartmentKeys } from "../model_types/department";
 
-import type { RawAuthUser } from "@saintrelion/auth-lib/dist/models/types";
-
-export interface User extends RawAuthUser {
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  roles: string[];
+  role: string;
   firstName: string;
   lastName: string;
   department: DepartmentKeys;

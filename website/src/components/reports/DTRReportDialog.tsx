@@ -8,7 +8,7 @@ import {
 import { Printer, Settings2, Calendar } from "lucide-react";
 import type { Attendance } from "@/models/Attendance";
 import type { User } from "@/models/User";
-import { useCurrentUser } from "@saintrelion/auth-lib";
+import { useCurrentUser } from "@/lib/AuthProvider";
 import { toDate } from "@saintrelion/time-functions";
 import { attendanceDateKey } from "@/lib/attendance";
 import { dtrAttendanceMap, dtrDay, dtrMonths } from "@/lib/dtr";
