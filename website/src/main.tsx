@@ -1,2 +1,2 @@
-import "./lib/firebase-client";
-import "./application";
+import "@/shared/lib/firebase-client";
+import "@/app/bootstrap";

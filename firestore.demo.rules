@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function anonymous() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+    function seededCollection(name) {
+      return name in ['ojt_User', 'ojt_InternInfo', 'ojt_Attendance', 'ojt_Accomplishments', 'ojt_Settings', 'ojt_OjtYearlyDateRange', 'ojt_Notification'];
+    }
+    match /{name}/{id} {
+      allow read: if anonymous() && seededCollection(name);
+      allow write: if false;
+    }
+    match /demoSessions/{uid}/{name}/{id} {
+      function owner() { return anonymous() && request.auth.uid == uid; }
+      function validRecord() {
+        let data = request.resource.data;
+        return data.id == id && data.ownerUid == uid
+          && data.userId is string
+          && exists(/databases/$(database)/documents/ojt_User/$(data.userId))
+          && get(/databases/$(database)/documents/ojt_User/$(data.userId)).data.role == 'intern'
+          && data.createdAt is string && data.updatedAt is string;
+      }
+      function validContent() {
+        let data = request.resource.data;
+        return (name == 'ojt_Attendance'
+            && data.keys().hasOnly(['id', 'userId', 'ownerUid', 'createdAt', 'updatedAt', 'type', 'attribute', 'location', 'image', 'evaluated'])
+            && data.type in ['time-in', 'break-out', 'break-in', 'time-out']
+            && data.attribute in ['', 'excused', 'absent', 'tardy']
+            && data.evaluated is bool && data.location == [0, 0]
+            && data.image == '/demo-capture.svg')
+          || (name == 'ojt_Accomplishments'
+            && data.keys().hasOnly(['id', 'userId', 'ownerUid', 'createdAt', 'updatedAt', 'date', 'description', 'image'])
+            && data.date is string && data.date.size() == 10
+            && data.description is string && data.description.size() > 0 && data.description.size() <= 4000
+            && data.image == '/demo-capture.svg')
+          || (name == 'ojt_InternInfo'
+            && data.keys().hasOnly(['id', 'userId', 'ownerUid', 'createdAt', 'updatedAt', 'schoolYear', 'trainingCompany', 'remainingHours', 'requiredHours', 'accomplished', 'unexcusedAbsences', 'tardinessCount'])
+            && data.remainingHours is string && data.remainingHours.size() <= 20
+            && data.requiredHours is string && data.requiredHours.size() <= 20
+            && data.unexcusedAbsences is string && data.unexcusedAbsences.size() <= 10
+            && data.tardinessCount is string && data.tardinessCount.size() <= 10
+            && data.trainingCompany is string && data.trainingCompany.size() <= 200
+            && data.accomplished is bool);
+      }
+      allow read: if owner() && seededCollection(name);
+      allow create, update: if owner() && validRecord() && validContent();
+      allow delete: if false;
+    }
+  }
+}

@@ -6,43 +6,27 @@ Fieldwork Operations tracks OJT attendance, required hours, and accomplishments 
 
 **Client project · Reengineered portfolio edition.** The client approved a public showcase without naming or visually identifying the school. The original system was delivered on its locally deployed server after development from September to December 2025. This separately hosted edition uses generalized branding and fictional demo records; later improvements are not claims about the client handoff.
 
-[Open portfolio demo](https://fieldwork-operations.srecosystem.space) · Availability has not been independently verified. The previews below work offline.
+[Open portfolio demo](https://fieldwork-operations.srecosystem.space) · Availability has not been independently verified.
 
 ## Selected workflows
 
-These previews illustrate the workflows with fictional records. They do not connect to Firebase or save changes.
+The application supports these attendance and reporting workflows.
 
-<!-- portfolio:showcase:start -->
-
-<!-- portfolio:feature shift-capture -->
 ## Record a four-step shift
 
-Interns capture a photo and location at Time in, Break out, Break in, and Time out. The preview simulates camera feedback without accessing the device.
+Interns capture a photo and location at Time in, Break out, Break in, and Time out. The demo uses a sample photo and coordinates.
 
-<!-- portfolio:preview showcase_html/shift-capture.html -->
-
-<!-- portfolio:feature daily-time-record -->
 ## Build a daily time record
 
-Interns select a date range to preview monthly DTR forms filled from recorded attendance. Missing entries stay blank; the preview does not print an official record.
+Interns select a date range to preview monthly DTR forms filled from recorded attendance. Missing entries stay blank.
 
-<!-- portfolio:preview showcase_html/daily-time-record.html -->
-
-<!-- portfolio:feature attendance-review -->
 ## Review attendance outcomes
 
-Advisers inspect captured entries, confirm an outcome, and track the corresponding remaining-hour adjustment. The preview uses fictional records and makes no database changes.
+Advisers inspect captured entries, confirm an outcome, and track the corresponding remaining-hour adjustment. The demo uses fictional records and saves visitor changes separately.
 
-<!-- portfolio:preview showcase_html/attendance-review.html -->
-
-<!-- portfolio:feature accomplishment-log -->
 ## Keep a dated work log
 
-Interns log dated work with an optional photo and filter entries for an accomplishment report. The preview demonstrates entry validation without saving or generating an official report.
-
-<!-- portfolio:preview showcase_html/accomplishment-log.html -->
-
-<!-- portfolio:showcase:end -->
+Interns log dated work with an optional photo and filter entries for an accomplishment report. Entries remain organized by date for reporting.
 
 ## Implementation and limitations
 
@@ -102,8 +86,16 @@ Vite is configured for port 5174. Deploy and test [Firestore Security Rules](fir
   "started_on": "2025-09",
   "ended_on": "2025-12",
   "featured": false,
-  "types": ["website"],
-  "technologies": ["react", "typescript", "docker", "kubernetes", "nginx"],
+  "types": [
+    "website"
+  ],
+  "technologies": [
+    "react",
+    "typescript",
+    "docker",
+    "kubernetes",
+    "nginx"
+  ],
   "links": [
     {
       "kind": "demo",
@@ -118,32 +110,28 @@ Vite is configured for port 5174. Deploy and test [Firestore Security Rules](fir
       "title": "Record a four-step shift",
       "description": "Interns record Time in, Break out, Break in, and Time out with a photo and coordinates; the interface shows the next step and camera-access feedback.",
       "outcome": "Gives interns and advisers a dated sequence of attendance captures to review.",
-      "interaction": "walkthrough",
-      "preview_path": "showcase_html/shift-capture.html"
+      "interaction": "walkthrough"
     },
     {
       "key": "daily-time-record",
       "title": "Build a daily time record",
       "description": "A selected date range produces monthly DTR forms from recorded attendance entries, leaving missing times blank and including recorded weekend shifts.",
       "outcome": "Lets interns preview and print a two-copy daily time record from existing captures.",
-      "interaction": "walkthrough",
-      "preview_path": "showcase_html/daily-time-record.html"
+      "interaction": "walkthrough"
     },
     {
       "key": "attendance-review",
       "title": "Review attendance outcomes",
       "description": "Department advisers inspect dated captures, confirm attendance outcomes, and apply the corresponding hour adjustments for assigned interns.",
       "outcome": "Helps advisers track reviewed attendance and remaining required hours.",
-      "interaction": "walkthrough",
-      "preview_path": "showcase_html/attendance-review.html"
+      "interaction": "walkthrough"
     },
     {
       "key": "accomplishment-log",
       "title": "Keep a dated work log",
       "description": "Interns log dated descriptions of completed work, optionally add photos, and filter entries for an accomplishment report.",
       "outcome": "Keeps work evidence organized by date for intern reporting.",
-      "interaction": "walkthrough",
-      "preview_path": "showcase_html/accomplishment-log.html"
+      "interaction": "walkthrough"
     }
   ]
 }
