@@ -28,6 +28,7 @@ export default defineConfig(({ command, mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: "autoUpdate",
+        injectRegister: false,
         includeAssets: ["fieldwork-icon.svg", "apple-touch-icon.png"],
         manifest: {
           name: "Fieldwork Operations",
@@ -60,6 +61,8 @@ export default defineConfig(({ command, mode }) => {
           ],
         },
         workbox: {
+          cleanupOutdatedCaches: true,
+          importScripts: ["/sw-update.js"],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
