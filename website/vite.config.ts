@@ -62,8 +62,19 @@ export default defineConfig(({ command, mode }) => {
         },
         workbox: {
           cleanupOutdatedCaches: true,
-          importScripts: ["/sw-update.js"],
+          globIgnores: ["**/index.html"],
+          navigateFallback: null,
           runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.mode === "navigate",
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "app-pages",
+                fetchOptions: { cache: "no-store" },
+                cacheableResponse: { statuses: [200] },
+                expiration: { maxEntries: 20 },
+              },
+            },
             {
               urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
               handler: "CacheFirst",

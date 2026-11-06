@@ -1,10 +1,2 @@
-// Refresh legacy tabs whose registration script did not listen for updates.
-const replacesExistingWorker = Boolean(self.registration.active);
-self.addEventListener("activate", (event) => {
-  if (!replacesExistingWorker) return;
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) =>
-      Promise.all(clients.filter((client) => client.url.startsWith(self.registration.scope)).map((client) => client.navigate(client.url).catch(() => undefined))),
-    ),
-  );
-});
+// Compatibility for older deployed workers that still import this URL.
+// Page navigation now checks the network; open tabs are not forcibly reloaded.
