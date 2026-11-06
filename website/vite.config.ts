@@ -62,6 +62,8 @@ export default defineConfig(({ command, mode }) => {
         },
         workbox: {
           cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
           globIgnores: ["**/index.html"],
           navigateFallback: null,
           runtimeCaching: [

@@ -6,6 +6,8 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 test("release worker uses network-first pages without precaching HTML", () => {
   const worker = read("../dist/sw.js");
   assert.match(worker, /NetworkFirst/);
+  assert.match(worker, /self\.skipWaiting\(\)/);
+  assert.match(worker, /clientsClaim\(\)/);
   assert.match(worker, /app-pages/);
   assert.doesNotMatch(worker, /url:["']index\.html["']/);
   assert.doesNotMatch(worker, /createHandlerBoundToURL/);
