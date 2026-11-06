@@ -1,3 +1,4 @@
+import { DemoMenu } from "@/shared/components/demo/DemoMenu";
 import UserMenu from "@/app/components/UserMenu";
 import { useCurrentUser } from "@/shared/hooks/useAuth";
 import type { User } from "@/shared/model/User";
@@ -44,7 +45,7 @@ export const SpecialHeader = ({ children }: { children: ReactNode }) => {
   return (
     <div className="app-shell min-h-screen w-full min-w-0 bg-[#f4f1ea] text-[#152238]">
       <header className="relative z-30 bg-[#09111f] text-white">
-        <div className="mx-auto flex min-h-[76px] max-w-[1500px] items-center gap-6 px-5 md:px-8 lg:px-10">
+        <div className="mx-auto flex min-h-[76px] max-w-[1500px] items-center gap-3 px-5 md:px-8 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
             <img
               src="/fieldwork-icon.svg"
@@ -52,7 +53,7 @@ export const SpecialHeader = ({ children }: { children: ReactNode }) => {
               alt=""
               aria-hidden="true"
             />
-            <div className="min-w-0">
+            <div className="hidden min-w-0 sm:block">
               <p className="truncate text-sm font-bold tracking-[-0.03em]">
                 FIELDWORK / OPS
               </p>
@@ -72,7 +73,7 @@ export const SpecialHeader = ({ children }: { children: ReactNode }) => {
                 to={link.to}
                 end={link.end}
                 className={({ isActive }) =>
-                  `flex items-center border-b-2 px-4 text-sm font-medium transition-colors ${isActive ? "border-[#f4b740] text-white" : "border-transparent text-slate-400 hover:text-white"}`
+                  `flex items-center border-b-2 px-3 text-sm font-medium transition-colors ${isActive ? "border-[#f4b740] text-white" : "border-transparent text-slate-400 hover:text-white"}`
                 }
               >
                 {link.label}
@@ -80,8 +81,9 @@ export const SpecialHeader = ({ children }: { children: ReactNode }) => {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3 lg:ml-5">
-            <span className="hidden max-w-44 truncate border-l border-white/15 pl-5 text-xs text-slate-300 sm:block">
+          <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-3">
+            <DemoMenu />
+            <span className="hidden max-w-32 truncate border-l border-white/15 pl-5 text-xs text-slate-300 xl:block">
               {user.firstName} {user.lastName}
             </span>
             <UserMenu />
