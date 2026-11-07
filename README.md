@@ -1,84 +1,91 @@
 # Fieldwork Operations
 
-Fieldwork Operations tracks OJT attendance, required hours, and accomplishments for interns, department advisers, and administrators. June Aurelius Jacinto developed the client system and this reengineered portfolio edition.
+Fieldwork Operations helps OJT interns record attendance and completed work, and gives department advisers the records they need to review progress toward required training hours.
 
-## Portfolio edition and demo
+[Open the demo](https://fieldwork-operations.srecosystem.space/login?workspace=demo)
 
-**Client project · Reengineered portfolio edition.** The client approved a public showcase without naming or visually identifying the school. The original system was delivered on its locally deployed server after development from September to December 2025. This separately hosted edition uses generalized branding and fictional demo records; later improvements are not claims about the client handoff.
+## What you can do
 
-[Open portfolio demo](https://fieldwork-operations.srecosystem.space) · Availability has not been independently verified.
+- **Record a shift:** capture Time in, Break out, Break in, and Time out with a photo and location.
+- **Prepare time records:** select dates and preview printable monthly DTR forms from attendance entries.
+- **Review attendance:** advisers inspect captures, record outcomes, and adjust remaining training hours.
+- **Report completed work:** interns keep dated accomplishments with optional photos and filter them for reports.
 
-## Selected workflows
+## Client delivery and portfolio edition
 
-The application supports these attendance and reporting workflows.
+June Aurelius Jacinto developed the original client system from September to December 2025, and it was delivered on the client's local server. The client approved a public showcase without naming or visually identifying the school.
 
-## Record a four-step shift
+This separately hosted portfolio edition uses generalized branding and includes later interface, authentication, architecture, and release improvements. Those changes are not claims about the original client handoff.
 
-Interns capture a photo and location at Time in, Break out, Break in, and Time out. The demo uses a sample photo and coordinates.
+The demo lets visitors choose a fictional intern, adviser, or administrator without a password. It uses a separate Firebase project, sample photos and coordinates, and visitor-specific changes. The **Demo** menu in the navigation contains details, account switching, and exit. Registration, profile changes, passwords, and shift-setting changes are disabled. See [DEMO.md](DEMO.md) for setup and data handling.
 
-## Build a daily time record
+## Engineering context
 
-Interns select a date range to preview monthly DTR forms filled from recorded attendance. Missing entries stay blank.
+The app uses React, TypeScript, Vite, Firebase Authentication, and Firestore. Route files are flat under `website/src/pages`; page-specific behavior lives in `features/<Name>Page`, with common clients, hooks, models, and components in `shared`. Server data flows through TanStack Query and the existing private `@saintrelion/*` packages.
 
-## Review attendance outcomes
+Firestore rules enforce data access. Attendance review and remaining-hour updates are separate browser writes, so a partial failure can leave them inconsistent. First-admin provisioning is manual; deleting an application profile does not delete its Firebase Auth account.
 
-Advisers inspect captured entries, confirm an outcome, and track the corresponding remaining-hour adjustment. The demo uses fictional records and saves visitor changes separately.
+Page navigation fetches current HTML from the network, with cached HTML as an offline fallback. Hashed assets remain cached. There is no periodic release polling or forced reload of open tabs. Offline page support does not make Firebase writes available offline.
 
-## Keep a dated work log
+## Local setup
 
-Interns log dated work with an optional photo and filter entries for an accomplishment report. Entries remain organized by date for reporting.
-
-## Implementation and limitations
-
-This edition is a React/Vite frontend using Firebase Authentication and Firestore through the private `@saintrelion/*` data-access package. The shift from local-LAN plans to Firebase led to an earlier custom credential flow; the portfolio edition now uses Firebase Authentication and keeps application profiles in `ojt_User/{uid}`. The manifest below records the engineering context in more detail.
-
-Firestore Security Rules, not route guards, control data access. Attendance outcomes and remaining-hour changes are currently separate browser-driven updates, not an atomic transaction. The first administrator needs manual Firebase provisioning, and deleting a profile does not delete its Auth account.
-
-GitHub Actions checks build inputs, publishes a commit-SHA website image, and invokes a production Kubernetes rollout. It does not run frontend tests or lint, deploy Firestore rules, or provide staging. There is no application API or database migration job in this repository. See [GITHUB_SETUP.md](GITHUB_SETUP.md) for operational details; private server manifests are not published here.
-
-## Getting started
-
-You need Node.js 22, pnpm/Corepack, a Firebase project, and authorized access to the private `@saintrelion/*` packages. The committed `website/.env` contains public Firebase Web App settings only; choose a separate Firebase project before testing against anything sensitive. From `website/`:
+Use Node.js 22, pnpm/Corepack, and authorized access to the private packages:
 
 ```powershell
+cd website
 corepack enable
 pnpm install
 pnpm dev
 ```
 
-Vite is configured for port 5174. Deploy and test [Firestore Security Rules](firestore.rules) before using real records; the frontend alone does not enforce data access. First-admin provisioning, package access, release configuration, and image-build instructions are in [GITHUB_SETUP.md](GITHUB_SETUP.md). A plain `docker compose up` does not start the website; the image-build test uses the opt-in `image` profile.
+The development command serves port **5174**. Open `/login?workspace=demo` to use the hosted demo; no Firebase emulators or Java runtime are required. Normal sign-in uses the live project's public Web App settings in `website/.env`. Initialization lives in `website/src/shared/lib/firebase-client.ts`; demo settings are in `website/src/shared/config/demo.ts`.
+
+Before working with real records, configure your own Firebase project and deploy the appropriate [live Firestore rules](firestore.rules). Demo rules are separate. Run `pnpm build` and `pnpm lint` from `website` to check changes.
+
+GitHub Actions publishes the website image and rolls production forward on application changes pushed to `main`. Markdown-only changes are excluded; `[skip build]` also skips image publication and deployment. CI does not run frontend tests or lint, or deploy Firestore rules. See [GITHUB_SETUP.md](GITHUB_SETUP.md) for package access, provisioning, and release operations. A plain `docker compose up` does not start the website; the image-build check uses the opt-in `image` profile.
 
 ## Author
 
 **June Aurelius Jacinto** · Full-Stack Software Developer · [GitHub](https://github.com/SaintRelion)
 
-## Portfolio manifest
+<details>
+<summary>SREcosystem project metadata</summary>
 
-<!-- portfolio:manifest:start -->
+<!-- project:manifest:start -->
 ```json
 {
   "schema_version": 2,
   "title": "Fieldwork Operations",
   "slug": "fieldwork-operations",
-  "summary": "An OJT system for four-step attendance, adviser review, training progress, and accomplishment records.",
-  "description": "A role-based internship operations system for interns, department advisers, and administrators, developed from September through December 2025. The school received a version deployed on its own local server. This separately hosted portfolio edition uses generalized branding and includes later interface, authentication, and release-workflow changes; those changes should not be read as part of the client handoff.",
+  "summary": "An OJT attendance and reporting system where interns record shifts and accomplishments, and department advisers review attendance and track required training hours.",
+  "description": "Interns record four daily attendance steps, review their training hours, and prepare time records and accomplishment reports. Advisers review records for their department, while administrators manage advisers and intern access. The original client system was delivered in 2025; this separately hosted portfolio edition includes later improvements and a fictional demo.",
   "role": "Full-stack developer",
-  "contribution": "Developed the client's OJT system and reengineered this portfolio edition, including its interface, Firebase Authentication integration, attendance workflow fixes, and website image release workflow.",
+  "contribution": "Developed the original client system and reengineered the portfolio edition, including the interface, Firebase Authentication, attendance workflow fixes, page-scoped architecture, and isolated public demo.",
   "engineering_notes": [
     {
       "key": "lan-to-firebase",
       "title": "Changing deployment assumptions",
-      "body": "The original direction was local LAN use, but requirements moved toward Firebase. A quickly patched custom credential flow kept the core workflows moving at the time; the portfolio edition replaces it with Firebase Authentication for credentials and sessions, while Firestore retains application profiles."
+      "body": "The project moved from local-LAN plans toward Firebase. The portfolio edition replaces the earlier custom credential flow with Firebase Authentication for credentials and sessions, while Firestore stores application profiles. These later changes are separate from the original client delivery."
     },
     {
       "key": "attendance-review-updates",
       "title": "Attendance review remains client-coordinated",
-      "body": "Adviser decisions update attendance outcomes and an intern's remaining hours through separate browser-driven operations. This supports the current review workflow but is not an atomic transaction; transactional or server-owned updates are a meaningful next step before higher-stakes use."
+      "body": "Adviser decisions update attendance outcomes and remaining training hours through separate browser operations. A partial failure can leave those records inconsistent. Transactional or server-owned updates remain a next step; the current workflow does not provide an atomic review operation."
     },
     {
       "key": "private-data-access-package",
       "title": "Private package dependency",
-      "body": "The app still uses private SaintRelion data-access and UI packages. They reduce duplicated app code but require authorized package access for a fresh install or image build. The data-access layer retains provider abstractions, although this app currently selects Firebase."
+      "body": "The frontend uses private SaintRelion data-access and UI packages. Fresh installs and image builds require authorized package access. Shared data access uses TanStack Query; page-specific components and behavior live beside their matching feature, with flat route files composing each page."
+    },
+    {
+      "key": "isolated-demo-workspace",
+      "title": "Separate demo data and visitor changes",
+      "body": "The public demo uses a separate Firebase project and anonymous visitor identities. Fictional profiles select the displayed role and department; they are not privileged authentication accounts. Shared sample records remain read-only, while each visitor writes private copies. Camera and location capture use sample values."
+    },
+    {
+      "key": "release-cache-policy",
+      "title": "Fresh pages with an offline fallback",
+      "body": "The service worker fetches page HTML from the network and uses saved HTML when the network is unavailable. Hashed build assets stay cached. HTML and worker scripts use no-store headers, and the app does not poll for releases or force open tabs to reload."
     }
   ],
   "confidentiality_message": "The client approved a portfolio showcase provided the school was not named or visually identifiable. Branding and demonstration records are generalized; the client installation and its URL are not published here.",
@@ -108,32 +115,34 @@ Vite is configured for port 5174. Deploy and test [Firestore Security Rules](fir
     {
       "key": "shift-capture",
       "title": "Record a four-step shift",
-      "description": "Interns record Time in, Break out, Break in, and Time out with a photo and coordinates; the interface shows the next step and camera-access feedback.",
-      "outcome": "Gives interns and advisers a dated sequence of attendance captures to review.",
+      "description": "Interns record Time in, Break out, Break in, and Time out with a photo and location, building a dated attendance sequence for review.",
+      "outcome": "",
       "interaction": "walkthrough"
     },
     {
       "key": "daily-time-record",
-      "title": "Build a daily time record",
-      "description": "A selected date range produces monthly DTR forms from recorded attendance entries, leaving missing times blank and including recorded weekend shifts.",
-      "outcome": "Lets interns preview and print a two-copy daily time record from existing captures.",
+      "title": "Prepare a daily time record",
+      "description": "Interns select a date range and preview printable monthly DTR forms from recorded attendance, with missing times left blank.",
+      "outcome": "Recorded weekend shifts are included.",
       "interaction": "walkthrough"
     },
     {
       "key": "attendance-review",
-      "title": "Review attendance outcomes",
-      "description": "Department advisers inspect dated captures, confirm attendance outcomes, and apply the corresponding hour adjustments for assigned interns.",
-      "outcome": "Helps advisers track reviewed attendance and remaining required hours.",
+      "title": "Review attendance and training hours",
+      "description": "Department advisers inspect intern captures, record attendance outcomes, and apply the corresponding adjustments to remaining training hours.",
+      "outcome": "",
       "interaction": "walkthrough"
     },
     {
       "key": "accomplishment-log",
       "title": "Keep a dated work log",
-      "description": "Interns log dated descriptions of completed work, optionally add photos, and filter entries for an accomplishment report.",
-      "outcome": "Keeps work evidence organized by date for intern reporting.",
+      "description": "Interns record completed work with an optional photo, then filter dated entries for an accomplishment report.",
+      "outcome": "",
       "interaction": "walkthrough"
     }
   ]
 }
 ```
-<!-- portfolio:manifest:end -->
+<!-- project:manifest:end -->
+
+</details>
