@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fieldwork-operations
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - fieldwork-operations.example.invalid
+      secretName: fieldwork-operations-tls
+  rules:
+    - host: fieldwork-operations.example.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: website
+                port:
+                  number: 80

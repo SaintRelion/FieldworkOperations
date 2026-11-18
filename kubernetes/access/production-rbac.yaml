@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: github-fieldwork-operations-deployer, namespace: fieldwork-operations}
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: fieldwork-operations-deployer, namespace: fieldwork-operations}
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    resourceNames: [website]
+    verbs: [get, watch, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: fieldwork-operations-deployer, namespace: fieldwork-operations}
+subjects:
+  - {kind: ServiceAccount, name: github-fieldwork-operations-deployer, namespace: fieldwork-operations}
+roleRef: {kind: Role, name: fieldwork-operations-deployer, apiGroup: rbac.authorization.k8s.io}

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fieldwork-operations-website
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fieldwork-operations-website
+    spec:
+      serviceAccountName: fieldwork-operations-runtime
+      automountServiceAccountToken: false
+      nodeSelector:
+        srecosystem.space/workloads: "true"
+      imagePullSecrets:
+        - name: fieldwork-operations-ghcr
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: fieldwork-operations-website
+      containers:
+        - name: website
+          image: fieldwork-operations-website
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 15

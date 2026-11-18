@@ -23,8 +23,8 @@ htmlcov/
 Thumbs.db
 .tmp/
 tmp/
-# Private server configuration follows portfolio: sync through Mutagen, never Git.
-/kubernetes/
+# Kubernetes definitions and examples are reviewed in Git; live values stay private.
+/kubernetes/**/secrets.yaml
 *.kubeconfig
 **/.kubeconfig
 *.pem

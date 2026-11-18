@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fieldwork-operations-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: fieldwork-operations-website
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
